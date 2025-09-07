@@ -18,6 +18,24 @@ Content-Type: application/json
     "refresh": "<refresh_token>"
 }
 
+### Refresh Access Token (access: 10 min, refresh: 15 min)
+POST http://localhost:8000/api/auth/token/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "<refresh_token>"
+}
+
+### Logout (Blacklist Refresh Token)
+POST http://localhost:8000/api/auth/logout/
+Content-Type: application/json
+
+{
+  "refresh": "<refresh_token>"
+}
+
+// After logout, the refresh token is blacklisted and cannot be used again. The access token remains valid until it expires (10 minutes).
+
 
 
 ### FILES (UPLOADED DOCUMENTS) ENDPOINT

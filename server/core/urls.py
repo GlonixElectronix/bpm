@@ -1,5 +1,7 @@
 """URL routing for the core Django app's API endpoints."""
+
 from django.urls import path, include
+from rest_framework_simplejwt.views import TokenBlacklistView
 
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -56,4 +58,5 @@ urlpatterns = [
         BalanceSheetReportView.as_view(),
         name="balance-sheet-report",
     ),
+    path("auth/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
 ]

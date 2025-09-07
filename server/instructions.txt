@@ -17,6 +17,7 @@
 - Add users via the Django admin interface (no public registration endpoint).
 
 ## 3. Authentication (JWT)
+
 - Obtain a JWT token:
 
     POST /api/auth/token/
@@ -35,7 +36,7 @@
 
     Authorization: Bearer <access_token>
 
-- Refresh the access token:
+- Refresh the access token (access token lifetime: 10 minutes, refresh token lifetime: 15 minutes):
 
     POST /api/auth/token/refresh/
     {
@@ -46,6 +47,15 @@
     {
         "access": "<new_access_token>"
     }
+
+- Logout (blacklist refresh token):
+
+    POST /api/auth/logout/
+    {
+        "refresh": "<refresh_token>"
+    }
+
+- After logout, the refresh token cannot be used again. The access token remains valid until it expires (10 minutes).
 
 ## 4. API Endpoints (CRUD)
 

@@ -7,10 +7,10 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 django-background-tasks = "*"
-djangorestframework-simplejwt = "*"
 dj-database-url = "*"
 django-cors-headers = "*"
 pylint = "*"
+djangorestframework-simplejwt = {extras = ["blacklist"], version = "*"}
 
 [dev-packages]
 
