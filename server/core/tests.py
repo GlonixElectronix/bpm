@@ -421,17 +421,48 @@ class QuoteFileAttachmentTestCase(FileAttachmentTestBase):
         self.assertEqual(response.status_code, 401)
 
 class CoverageBoostTestCase(APITestCase):
-    """Extra tests for coverage boost and additional model/serializer edge cases."""
     def setUp(self):
         """Set up test data for coverage boost tests."""
+        import os
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(username="testuser", password="testpass")
         self.customer = Customer.objects.create(
             display_name="Coverage Customer", email="cov@example.com"
         )
+        # Create dummy file for streaming test
+        self.dummy_file_path = os.path.abspath("file.pdf")
+        with open(self.dummy_file_path, "wb") as f:
+            f.write(b"dummy content")
         self.file = CustomerDocument.objects.create(file="file.pdf")
         self.quote = Quote.objects.create(
             customer=self.customer, quote_number="Q-COV-1",
             quote_date="2025-09-04", expiry_date="2025-09-10"
         )
+
+    def tearDown(self):
+        import os
+        if hasattr(self, "dummy_file_path") and os.path.exists(self.dummy_file_path):
+            os.remove(self.dummy_file_path)
+
+    def test_file_metadata_only(self):
+        """Test retrieving file metadata only with ?meta=1."""
+        url = reverse("file-detail", args=[self.file.id]) + "?meta=1"
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("id", resp.data)
+        self.assertIn("file", resp.data)
+        self.assertIn("uploaded_at", resp.data)
+
+    def test_file_stream_content(self):
+        """Test streaming file content (no ?meta param)."""
+        url = reverse("file-detail", args=[self.file.id])
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Content-Disposition", resp)
+        self.assertEqual(resp["Content-Type"], "application/octet-stream")
 
     def test_customer_str(self):
         """Test __str__ method of Customer model."""

@@ -169,8 +169,11 @@ class CustomerDocumentViewSet(viewsets.ModelViewSet):  # pylint: disable=too-man
 
 
     def retrieve(self, request, *args, **kwargs) -> Response:
-        """Return file as response for GET /api/files/<id>/"""
+        """Return file metadata as JSON if ?meta=1, else stream file content."""
         instance = self.get_object()
+        if request.query_params.get("meta") == "1":
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
         file_handle = instance.file.open("rb")
         response = Response(
             file_handle.read(), content_type="application/octet-stream"

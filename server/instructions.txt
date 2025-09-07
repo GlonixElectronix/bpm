@@ -808,17 +808,25 @@ file: <file>
 
 ### Files (Uploaded Documents)
 
+
 #### Endpoints
 - List:      GET    /api/files/
 - Upload:    POST   /api/files/ (multipart/form-data)
-- Retrieve:  GET    /api/files/{id}/
+- Retrieve (metadata):  GET    /api/files/{id}/?meta=1
+- Retrieve (content):   GET    /api/files/{id}/
 - Update:    PUT    /api/files/{id}/ (multipart/form-data)
 - Delete:    DELETE /api/files/{id}/
+
 
 #### Description
 - Upload, update, download, and manage files (PDF, JPG, etc) for use with Customers, Invoices, Bills, etc.
 - Files are uploaded once and can be associated with multiple business objects by their ID.
 - Requires authentication (JWT access token).
+-
+- **To get file metadata only:**
+    - `GET /api/files/{id}/?meta=1` returns JSON with file info (id, file path, uploaded_at).
+- **To stream/download file content:**
+    - `GET /api/files/{id}/` returns the file as a binary stream (PDF, JPG, etc).
 
 #### File Fields
 - id: integer (auto)
@@ -870,7 +878,19 @@ Response:
     "uploaded_at": "2025-08-30T12:05:00Z"
 }
 
-#### Example: Download/View a File
+
+#### Example: Get File Metadata Only
+GET /api/files/1/?meta=1
+Authorization: Bearer <access_token>
+
+Response:
+{
+    "id": 1,
+    "file": "/media/customer_documents/invoice.pdf",
+    "uploaded_at": "2025-08-30T12:00:00Z"
+}
+
+#### Example: Download/View a File (Stream Content)
 GET /api/files/1/
 Authorization: Bearer <access_token>
 

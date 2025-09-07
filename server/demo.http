@@ -81,7 +81,21 @@ GET http://localhost:8000/api/files/
 Authorization: Bearer <access_token>
 
 ####
-# View/Download a file (PDF or JPG)
+
+# Get file metadata only
+GET http://localhost:8000/api/files/1/?meta=1
+Authorization: Bearer <access_token>
+
+# Response:
+# {
+#   "id": 1,
+#   "file": "/media/customer_documents/invoice.pdf",
+#   "uploaded_at": "2025-08-30T12:00:00Z"
+# }
+
+####
+
+# View/Download a file (PDF or JPG, stream content)
 GET http://localhost:8000/api/files/1/
 Authorization: Bearer <access_token>
 
