@@ -1,3 +1,4 @@
+"""URL routing for the core Django app's API endpoints."""
 from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
@@ -45,6 +46,14 @@ router.register(r"files", CustomerDocumentViewSet, basename="file")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("reports/profit-and-loss/", ProfitAndLossReportView.as_view(), name="profit-and-loss-report"),
-    path("reports/balance-sheet/", BalanceSheetReportView.as_view(), name="balance-sheet-report"),
+    path(
+        "reports/profit-and-loss/",
+        ProfitAndLossReportView.as_view(),
+        name="profit-and-loss-report",
+    ),
+    path(
+        "reports/balance-sheet/",
+        BalanceSheetReportView.as_view(),
+        name="balance-sheet-report",
+    ),
 ]

@@ -209,7 +209,7 @@ Authorization: Bearer <access_token>
 
 ####
 
-# Create invoice with attached files (programmatic, not UI-uploaded)
+# Create invoice with attached files (both attached_file_ids and invoice_file_ids)
 POST http://localhost:8000/api/invoices/
 Authorization: Bearer <access_token>
 Content-Type: application/json
@@ -222,23 +222,43 @@ Content-Type: application/json
   "customer_notes": "Thank you for your business.",
   "terms_and_conditions": "Payment due in 30 days.",
   "total_amount": "15500.00",
+  "attached_file_ids": [4, 5],
   "invoice_file_ids": [1, 2, 3]
 }
 
 ####
-# Retrieve invoice (with nested item details and files)
+
+# Retrieve invoice (with attached_files and invoice_files)
 GET http://localhost:8000/api/invoices/1/
 Authorization: Bearer <access_token>
 
+# Response example:
+# {
+#   "id": 1,
+#   ...
+#   "attached_files": [
+#     {"id": 4, "file": "/media/customer_documents/file4.pdf", "uploaded_at": "..."},
+#     {"id": 5, "file": "/media/customer_documents/file5.pdf", "uploaded_at": "..."}
+#   ],
+#   "invoice_files": [
+#     {"id": 1, "file": "/media/customer_documents/file1.pdf", "uploaded_at": "..."},
+#     {"id": 2, "file": "/media/customer_documents/file2.pdf", "uploaded_at": "..."},
+#     {"id": 3, "file": "/media/customer_documents/file3.pdf", "uploaded_at": "..."}
+#   ],
+#   ...
+# }
+
 ####
-# Update invoice (partial or full)
+# Update invoice (partial or full, can update attached_file_ids and invoice_file_ids)
 PUT http://localhost:8000/api/invoices/1/
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
 {
   "customer_notes": "Updated notes",
-  "total_amount": "16000.00"
+  "total_amount": "16000.00",
+  "attached_file_ids": [6],
+  "invoice_file_ids": [2, 3]
 }
 
 ####
@@ -409,7 +429,10 @@ Content-Type: application/json
   "quote_number": "Q-2025-002",
   "quote_date": "2025-09-04",
   "expiry_date": "2025-09-10",
-  "item_details": [ ... ],
+  "item_details": [
+    {"item_id": 1, "quantity": 2, "rate": "100.00", "amount": "200.00"},
+    {"item_id": 2, "quantity": 1, "rate": "150.00", "amount": "150.00"}
+  ],
   "quote_file_ids": [1, 2, 3]
 }
 
@@ -448,6 +471,10 @@ Content-Type: application/json
   "tax_percentage": "12",
   "adjustment": "-500.00",
   "total_amount": "17500.00",
+  "item_details": [
+    {"item_id": 1, "quantity": 2, "rate": "100.00", "amount": "200.00"},
+    {"item_id": 2, "quantity": 1, "rate": "150.00", "amount": "150.00"}
+  ],
   "proforma_invoice_file_ids": [1, 2, 3]
 }
 
@@ -503,6 +530,10 @@ Content-Type: application/json
   "reference_number": "REF-789",
   "date": "2025-08-30",
   "challan_type": "liquid_gas",
+  "item_details": [
+    {"item_id": 1, "quantity": 2, "rate": "100.00", "amount": "200.00"},
+    {"item_id": 2, "quantity": 1, "rate": "150.00", "amount": "150.00"}
+  ],
   "delivery_challan_file_ids": [10, 11],
   "total_amount": "20000.00"
 }
@@ -541,7 +572,7 @@ GET http://localhost:8000/api/bills/
 Authorization: Bearer <access_token>
 
 ####
-# Create bill (basic fields)
+# Create bill (basic fields, with file association)
 POST http://localhost:8000/api/bills/
 Authorization: Bearer <access_token>
 Content-Type: application/json

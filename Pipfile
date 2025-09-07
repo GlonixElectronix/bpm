@@ -10,6 +10,7 @@ django-background-tasks = "*"
 djangorestframework-simplejwt = "*"
 dj-database-url = "*"
 django-cors-headers = "*"
+pylint = "*"
 
 [dev-packages]
 
