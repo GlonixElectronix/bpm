@@ -322,8 +322,7 @@ Authorization: Bearer <access_token>
 - created_at: datetime
 
 #### QuoteItem / ProformaInvoiceItem Fields (identical)
-- id: integer
-- item: Item object (from Items endpoint, read-only)
+- quote_item_number: integer (starts at 1 for each quote; used as the identifier in API requests and responses)
 - item_id: integer (write-only)
 - quantity: integer
 - rate: decimal
@@ -335,22 +334,26 @@ Content-Type: application/json
 Authorization: Bearer <access_token>
 
 {
-  "customer_id": 1,
-  "quote_number": "Q-2025-001",
-  "reference_number": "REF-123",
-  "quote_date": "2025-08-27",
-  "expiry_date": "2025-09-10",
-  "salesperson": "Alice Smith",
-  "project_name": "Project X",
-  "subject": "Quotation for Project X",
-  "customer_notes": "Please review and confirm.",
-  "terms_and_conditions": "Payment within 30 days.",
-  "subtotal": "10000.00",
-  "discount": "5.00",
-  "tax_type": "TDS",
-  "tax_percentage": "5",
-  "adjustment": "-100.00",
-  "total_amount": "9500.00"
+    "customer_id": 1,
+    "quote_number": "Q-2025-001",
+    "reference_number": "REF-123",
+    "quote_date": "2025-08-27",
+    "expiry_date": "2025-09-10",
+    "salesperson": "Alice Smith",
+    "project_name": "Project X",
+    "subject": "Quotation for Project X",
+    "customer_notes": "Please review and confirm.",
+    "terms_and_conditions": "Payment within 30 days.",
+    "subtotal": "10000.00",
+    "discount": "5.00",
+    "tax_type": "TDS",
+    "tax_percentage": "5",
+    "adjustment": "-100.00",
+    "total_amount": "9500.00",
+    "item_details": [
+        {"quote_item_number": 1, "item_id": 5, "quantity": 2, "rate": "5000.00"},
+        {"quote_item_number": 2, "item_id": 6, "quantity": 1, "rate": "1000.00"}
+    ]
 }
 
 #### Example: Retrieve Quote (with nested item details)
@@ -359,28 +362,29 @@ Authorization: Bearer <access_token>
 
 Response:
 {
-  "id": 1,
-  "customer": { ... },
-  "quote_number": "Q-2025-001",
-  "reference_number": "REF-123",
-  "quote_date": "2025-08-27",
-  "expiry_date": "2025-09-10",
-  "salesperson": "Alice Smith",
-  "project_name": "Project X",
-  "subject": "Quotation for Project X",
-  "item_details": [
-    {"id": 1, "item": { ... }, "quantity": 2, "rate": "5000.00", "amount": "10000.00"}
-  ],
-  "customer_notes": "Please review and confirm.",
-  "terms_and_conditions": "Payment within 30 days.",
-  "subtotal": "10000.00",
-  "discount": "5.00",
-  "tax_type": "TDS",
-  "tax_percentage": "5",
-  "adjustment": "-100.00",
-  "total_amount": "9500.00",
-  "status": "draft",
-  "created_at": "2025-08-27T10:00:00Z"
+    "id": 1,
+    "customer": { ... },
+    "quote_number": "Q-2025-001",
+    "reference_number": "REF-123",
+    "quote_date": "2025-08-27",
+    "expiry_date": "2025-09-10",
+    "salesperson": "Alice Smith",
+    "project_name": "Project X",
+    "subject": "Quotation for Project X",
+    "item_details": [
+        {"quote_item_number": 1, "item": { ... }, "quantity": 2, "rate": "5000.00", "amount": "10000.00"},
+        {"quote_item_number": 2, "item": { ... }, "quantity": 1, "rate": "1000.00", "amount": "1000.00"}
+    ],
+    "customer_notes": "Please review and confirm.",
+    "terms_and_conditions": "Payment within 30 days.",
+    "subtotal": "10000.00",
+    "discount": "5.00",
+    "tax_type": "TDS",
+    "tax_percentage": "5",
+    "adjustment": "-100.00",
+    "total_amount": "9500.00",
+    "status": "draft",
+    "created_at": "2025-08-27T10:00:00Z"
 }
 
 ### Proforma Invoices

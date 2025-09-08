@@ -414,7 +414,7 @@ GET http://localhost:8000/api/quotes/
 Authorization: Bearer <access_token>
 
 ####
-# Create quote (all fields, no items)
+# Create quote (all fields, with items)
 POST http://localhost:8000/api/quotes/
 Authorization: Bearer <access_token>
 Content-Type: application/json
@@ -435,13 +435,28 @@ Content-Type: application/json
   "tax_type": "TDS",
   "tax_percentage": "5",
   "adjustment": "-100.00",
-  "total_amount": "9500.00"
+  "total_amount": "9500.00",
+  "item_details": [
+    {"quote_item_number": 1, "item_id": 1, "quantity": 2, "rate": "5000.00", "amount": "10000.00"},
+    {"quote_item_number": 2, "item_id": 2, "quantity": 1, "rate": "1000.00", "amount": "1000.00"}
+  ]
 }
 
 ####
+
 # Retrieve quote (with nested item details)
 GET http://localhost:8000/api/quotes/1/
 Authorization: Bearer <access_token>
+
+# Response:
+# {
+#   ...
+#   "item_details": [
+#     {"quote_item_number": 1, "item": { ... }, "quantity": 2, "rate": "5000.00", "amount": "10000.00"},
+#     {"quote_item_number": 2, "item": { ... }, "quantity": 1, "rate": "1000.00", "amount": "1000.00"}
+#   ]
+#   ...
+# }
 
 ####
 # Update quote (partial or full)
@@ -466,6 +481,7 @@ Content-Type: application/json
 
 {
   "quote": 1,
+  "quote_item_number": 3,
   "item_id": 1,
   "quantity": 2,
   "rate": "5000.00",
@@ -485,8 +501,8 @@ Content-Type: application/json
   "quote_date": "2025-09-04",
   "expiry_date": "2025-09-10",
   "item_details": [
-    {"item_id": 1, "quantity": 2, "rate": "100.00", "amount": "200.00"},
-    {"item_id": 2, "quantity": 1, "rate": "150.00", "amount": "150.00"}
+    {"quote_item_number": 1, "item_id": 1, "quantity": 2, "rate": "100.00", "amount": "200.00"},
+    {"quote_item_number": 2, "item_id": 2, "quantity": 1, "rate": "150.00", "amount": "150.00"}
   ],
   "quote_file_ids": [1, 2, 3]
 }

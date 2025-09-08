@@ -373,8 +373,9 @@ class QuoteFileAttachmentTestCase(FileAttachmentTestBase):
         update_data["quote_number"] = "Q-2025-TEST-ITEMS-UPDATED"
         resp = self.client.put(update_url, update_data, format="json")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(resp.data["item_details"]), 1)
-        self.assertEqual(resp.data["item_details"][0]["quantity"], 5)
+    self.assertEqual(len(resp.data["item_details"]), 1)
+    self.assertEqual(resp.data["item_details"][0]["quantity"], 5)
+    self.assertEqual(resp.data["item_details"][0]["quote_item_number"], 1)
 
     def test_update_quote_with_files(self):
         """Test updating a Quote with attached files."""

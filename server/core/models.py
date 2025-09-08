@@ -474,10 +474,14 @@ class QuoteItem(DocumentItemBase):
         related_name="item_details",
         on_delete=models.CASCADE,
     )
+    quote_item_number = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = ("quote", "quote_item_number")
 
     def __str__(self):
         return (
-            f"{self.item.name} x {self.quantity} for Quote "  # pylint: disable=no-member
+            f"[{self.quote_item_number}] {self.item.name} x {self.quantity} for Quote "  # pylint: disable=no-member
             f"{self.quote.quote_number}"  # pylint: disable=no-member
         )
 

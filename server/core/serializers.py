@@ -309,20 +309,17 @@ class PaymentSerializer(serializers.ModelSerializer):
 class QuoteItemSerializer(serializers.ModelSerializer):
     """Serializer for QuoteItem model."""
 
-    item = ItemSerializer(read_only=True)
-    item_id = serializers.PrimaryKeyRelatedField(  # pylint: disable=no-member
-        queryset=Item.objects.all(), source="item", write_only=True  # pylint: disable=no-member
+    item_id = serializers.PrimaryKeyRelatedField(
+        queryset=Item.objects.all(), source="item"
     )
+    quote_item_number = serializers.IntegerField(read_only=True)
 
-
-    # pylint: disable=no-member, import-outside-toplevel, import-self, redefined-outer-name
-    class Meta:  # pylint: disable=too-few-public-methods
-        """Meta options for QuoteItemSerializer."""
+    class Meta:
         model = QuoteItem
         fields = [
-            "id", "item", "item_id", "quantity", "rate", "amount"
+            "quote_item_number", "item_id", "quantity", "rate", "amount"
         ]
-    read_only_fields = ["id", "item", "amount"]
+        read_only_fields = ["quote_item_number", "amount"]
 
 
 
@@ -359,17 +356,16 @@ class QuoteSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         item_details_data = validated_data.pop("item_details", [])
-        # Accept both 'quote_files' and 'quote_file_ids' for robustness
         quote_files = validated_data.pop("quote_files", None)
         if quote_files is None:
             quote_files = validated_data.pop("quote_file_ids", [])
         quote = super().create(validated_data)
         if quote_files:
             quote.quote_files.set(quote_files)
-        for item_data in item_details_data:
+        for idx, item_data in enumerate(item_details_data, start=1):
             if "amount" not in item_data:
                 item_data["amount"] = item_data.get("quantity", 0) * item_data.get("rate", 0)
-            QuoteItem.objects.create(quote=quote, **item_data)  # pylint: disable=no-member
+            QuoteItem.objects.create(quote=quote, quote_item_number=idx, **item_data)
         return quote
 
     def update(self, instance, validated_data):
@@ -380,10 +376,10 @@ class QuoteSerializer(serializers.ModelSerializer):
             quote.quote_files.set(quote_files)
         if item_details_data is not None:
             quote.item_details.all().delete()
-            for item_data in item_details_data:
+            for idx, item_data in enumerate(item_details_data, start=1):
                 if "amount" not in item_data:
                     item_data["amount"] = item_data.get("quantity", 0) * item_data.get("rate", 0)
-                QuoteItem.objects.create(quote=quote, **item_data)  # pylint: disable=no-member
+                QuoteItem.objects.create(quote=quote, quote_item_number=idx, **item_data)
         return quote
 
 
