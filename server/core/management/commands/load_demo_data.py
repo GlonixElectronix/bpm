@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from core.models import Customer, ContactPerson, Quote, QuoteItem, CustomerDocument
+from core.models import Customer, ContactPerson, Quote, QuoteItem, CustomerDocument, Vendor
 from django.utils import timezone
 
 class Command(BaseCommand):
@@ -66,6 +66,67 @@ class Command(BaseCommand):
                 'billing_state': 'State2',
                 'billing_pin_code': '200002',
                 'customer_type': 'business',
+            }
+        )
+
+        # Vendors
+        vendor1, _ = Vendor.objects.get_or_create(
+            email='vendor1@example.com',
+            defaults={
+                'display_name': 'Vendor One',
+                'company_name': 'Vendor One Pvt Ltd',
+                'vendor_type': 'business',
+                'billing_phone': '9988776655',
+                'billing_street1': '789 Supplier Rd',
+                'billing_city': 'Supplier City',
+                'billing_state': 'State2',
+                'billing_pin_code': '200002',
+                'currency': 'INR',
+                'payment_terms': 'net_30',
+                'custom_fields': {"GSTIN": "27VENDOR1234F1Z5"},
+                'tags': ['preferred', '2025'],
+                'remarks': 'Key vendor',
+            }
+        )
+        vendor2, _ = Vendor.objects.get_or_create(
+            email='vendor2@example.com',
+            defaults={
+                'display_name': 'Vendor Two',
+                'company_name': 'Vendor Two LLP',
+                'vendor_type': 'individual',
+                'billing_phone': '8877665544',
+                'billing_street1': '456 Vendor Lane',
+                'billing_city': 'Vendor Town',
+                'billing_state': 'State3',
+                'billing_pin_code': '300003',
+                'currency': 'USD',
+                'payment_terms': 'due_on_receipt',
+                'custom_fields': {"GSTIN": "29VENDOR5678F2Z6"},
+                'tags': ['international'],
+                'remarks': 'Occasional supplier',
+            }
+        )
+        # Vendor contact persons
+        ContactPerson.objects.get_or_create(
+            vendor=vendor1,
+            email='alice@vendor1.com',
+            defaults={
+                'salutation': 'ms',
+                'first_name': 'Alice',
+                'last_name': 'Vendor',
+                'work_phone': '9988776655',
+                'mobile': '9123456789',
+            }
+        )
+        ContactPerson.objects.get_or_create(
+            vendor=vendor2,
+            email='bob@vendor2.com',
+            defaults={
+                'salutation': 'mr',
+                'first_name': 'Bob',
+                'last_name': 'Supplier',
+                'work_phone': '8877665544',
+                'mobile': '9876543210',
             }
         )
 
@@ -135,29 +196,35 @@ class Command(BaseCommand):
         )
 
         # Quote Items
-        QuoteItem.objects.create(
+        QuoteItem.objects.get_or_create(
             quote=quote1,
             item=item1,
-            quantity=10,
-            rate=500,
-            amount=5000,
-            quote_item_number=1,
+            defaults={
+                'quantity': 10,
+                'rate': 500,
+                'amount': 5000,
+                'quote_item_number': 1,
+            }
         )
-        QuoteItem.objects.create(
+        QuoteItem.objects.get_or_create(
             quote=quote1,
             item=item2,
-            quantity=5,
-            rate=1000,
-            amount=5000,
-            quote_item_number=2,
+            defaults={
+                'quantity': 5,
+                'rate': 1000,
+                'amount': 5000,
+                'quote_item_number': 2,
+            }
         )
-        QuoteItem.objects.create(
+        QuoteItem.objects.get_or_create(
             quote=quote2,
             item=item3,
-            quantity=20,
-            rate=800,
-            amount=16000,
-            quote_item_number=1,
+            defaults={
+                'quantity': 20,
+                'rate': 800,
+                'amount': 16000,
+                'quote_item_number': 1,
+            }
         )
 
         # Example for InvoiceItem, ProformaInvoiceItem, DeliveryChallanItem (future-proof, add real demo if needed)

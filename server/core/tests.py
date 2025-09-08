@@ -220,7 +220,7 @@ class ModelStrCoverageTestCase(APITestCase):  # pylint: disable=too-many-instanc
     """Test __str__ methods for all major models for coverage and correctness."""
     def setUp(self):
         """Set up test data for model __str__ method coverage tests."""
-        self.vendor = Vendor.objects.create(name="Vendor1", email="v1@example.com")  # pylint: disable=no-member
+        self.vendor = Vendor.objects.create(display_name="Vendor1", email="v1@example.com")  # pylint: disable=no-member
         self.item = Item.objects.create(name="Item1", description="desc", price=10, sku="SKU1")  # pylint: disable=no-member
         self.customer = Customer.objects.create(display_name="Cust1", email="c1@example.com")  # pylint: disable=no-member
         self.invoice = Invoice.objects.create(

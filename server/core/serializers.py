@@ -54,14 +54,51 @@ class ItemSerializer(serializers.ModelSerializer):
 
 class VendorSerializer(serializers.ModelSerializer):
 
-    """Serializer for Vendor model."""
+    contact_persons = ContactPersonSerializer(many=True, required=False)
+
     class Meta:  # pylint: disable=too-few-public-methods
         """Meta options for VendorSerializer."""
         model = Vendor
         fields = [
-            "id", "name", "email", "company_name", "address", "phone", "created_at"
+            "id", "vendor_type", "salutation", "first_name", "last_name", "company_name",
+            "display_name", "email", "work_phone", "mobile", "pan", "currency",
+            "opening_balance", "payment_terms", "billing_attention",
+            "billing_country", "billing_street1", "billing_street2", "billing_city",
+            "billing_state", "billing_pin_code", "billing_phone", "billing_fax",
+            "shipping_attention", "shipping_country", "shipping_street1", "shipping_street2",
+            "shipping_city", "shipping_state", "shipping_pin_code", "shipping_phone",
+            "shipping_fax", "contact_persons", "custom_fields", "tags", "remarks",
+            "created_at"
         ]
         read_only_fields = ["id", "created_at"]
+
+    def create(self, validated_data):
+        contact_persons_data = validated_data.pop("contact_persons", [])
+        vendor = super().create(validated_data)
+        for cp_data in contact_persons_data:
+            ContactPerson.objects.create(vendor=vendor, **cp_data)
+        return vendor
+
+    def update(self, instance, validated_data):
+        contact_persons_data = validated_data.pop("contact_persons", None)
+        instance = super().update(instance, validated_data)
+        if contact_persons_data is not None:
+            existing_cps = {cp.id: cp for cp in getattr(instance, 'contact_persons', []).all()}
+            new_cp_ids = [cp.get('id') for cp in contact_persons_data if cp.get('id')]
+            # Delete removed contact persons
+            for cp_id, cp in existing_cps.items():
+                if cp_id not in new_cp_ids:
+                    cp.delete()
+            # Update or create
+            for cp_data in contact_persons_data:
+                cp_id = cp_data.get('id')
+                if cp_id and cp_id in existing_cps:
+                    for attr, value in cp_data.items():
+                        setattr(existing_cps[cp_id], attr, value)
+                    existing_cps[cp_id].save()
+                else:
+                    ContactPerson.objects.create(vendor=instance, **{k: v for k, v in cp_data.items() if k != "id"})
+        return instance
 
 
 

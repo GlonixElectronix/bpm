@@ -109,7 +109,7 @@ class Bill(models.Model):
 
     def __str__(self) -> str:
         """String representation of Bill."""
-        return f"Bill {self.bill_number} - {self.vendor.name}"  # pylint: disable=no-member
+        return f"Bill {self.bill_number} - {self.vendor.display_name}"  # pylint: disable=no-member
 
 
 class Customer(models.Model):
@@ -323,7 +323,10 @@ class ContactPerson(models.Model):
         ("mrs", "Mrs"),
     ]
     customer = models.ForeignKey(
-        Customer, related_name="contact_persons", on_delete=models.CASCADE
+        Customer, related_name="contact_persons", on_delete=models.CASCADE, null=True, blank=True
+    )
+    vendor = models.ForeignKey(
+        'Vendor', related_name="contact_persons", on_delete=models.CASCADE, null=True, blank=True
     )
     salutation = models.CharField(
         max_length=5, choices=SALUTATION_CHOICES, blank=True, null=True
@@ -342,16 +345,84 @@ class ContactPerson(models.Model):
 class Vendor(models.Model):
     """Represents a vendor supplying goods or services."""
 
-    name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
+
+    VENDOR_TYPE_CHOICES = [
+        ("business", "Business"),
+        ("individual", "Individual"),
+    ]
+    SALUTATION_CHOICES = [
+        ("dr", "Dr"),
+        ("mr", "Mr"),
+        ("ms", "Ms"),
+        ("mrs", "Mrs"),
+    ]
+    CURRENCY_CHOICES = [
+        ("AED", "AED"),
+        ("AUD", "AUD"),
+        ("BND", "BND"),
+        ("CAD", "CAD"),
+        ("CNY", "CNY"),
+        ("EUR", "EUR"),
+        ("GBP", "GBP"),
+        ("INR", "INR"),
+        ("JPY", "JPY"),
+        ("SAR", "SAR"),
+        ("USD", "USD"),
+        ("ZAR", "ZAR"),
+    ]
+    PAYMENT_TERMS_CHOICES = [
+        ("due_on_receipt", "Due on Receipt"),
+        ("net_7", "Net 7"),
+        ("net_15", "Net 15"),
+        ("net_30", "Net 30"),
+        ("net_45", "Net 45"),
+    ]
+
+    vendor_type = models.CharField(
+        max_length=20, choices=VENDOR_TYPE_CHOICES, default="business"
+    )
+    salutation = models.CharField(
+        max_length=5, choices=SALUTATION_CHOICES, blank=True, null=True
+    )
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
     company_name = models.CharField(max_length=255, blank=True)
-    address = models.TextField(blank=True)
-    phone = models.CharField(max_length=50, blank=True)
+    display_name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    work_phone = models.CharField(max_length=50, blank=True)
+    mobile = models.CharField(max_length=50, blank=True)
+    pan = models.CharField(max_length=20, blank=True)
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default="INR")
+    opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment_terms = models.CharField(
+        max_length=20, choices=PAYMENT_TERMS_CHOICES, default="due_on_receipt"
+    )
+    billing_attention = models.CharField(max_length=255, blank=True)
+    billing_country = models.CharField(max_length=100, blank=True)
+    billing_street1 = models.CharField(max_length=255, blank=True)
+    billing_street2 = models.CharField(max_length=255, blank=True)
+    billing_city = models.CharField(max_length=100, blank=True)
+    billing_state = models.CharField(max_length=100, blank=True)
+    billing_pin_code = models.CharField(max_length=20, blank=True)
+    billing_phone = models.CharField(max_length=50, blank=True)
+    billing_fax = models.CharField(max_length=50, blank=True)
+    shipping_attention = models.CharField(max_length=255, blank=True)
+    shipping_country = models.CharField(max_length=100, blank=True)
+    shipping_street1 = models.CharField(max_length=255, blank=True)
+    shipping_street2 = models.CharField(max_length=255, blank=True)
+    shipping_city = models.CharField(max_length=100, blank=True)
+    shipping_state = models.CharField(max_length=100, blank=True)
+    shipping_pin_code = models.CharField(max_length=20, blank=True)
+    shipping_phone = models.CharField(max_length=50, blank=True)
+    shipping_fax = models.CharField(max_length=50, blank=True)
+    custom_fields = models.JSONField(default=dict, blank=True)
+    tags = models.JSONField(default=list, blank=True)
+    remarks = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         """String representation of Vendor."""
-        return str(self.name)
+        return str(self.display_name)
 
 
 class Item(models.Model):

@@ -219,17 +219,57 @@ GET http://localhost:8000/api/vendors/
 Authorization: Bearer <access_token>
 
 ####
-# Create vendor
+
+# Create vendor (all fields)
 POST http://localhost:8000/api/vendors/
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
 {
-    "name": "Vendor Inc",
-    "email": "vendor@example.com",
-    "company_name": "Vendor Incorporated",
-    "address": "456 Vendor St",
-    "phone": "9876543210"
+  "vendor_type": "business",
+  "salutation": "mr",
+  "first_name": "John",
+  "last_name": "Doe",
+  "company_name": "Acme Vendor",
+  "display_name": "Acme Vendor (John Doe)",
+  "email": "john.doe@vendor.com",
+  "work_phone": "1234567890",
+  "mobile": "9876543210",
+  "pan": "ABCDE1234F",
+  "currency": "INR",
+  "opening_balance": "1000.00",
+  "payment_terms": "net_30",
+  "billing_attention": "Accounts",
+  "billing_country": "India",
+  "billing_street1": "123 Main St",
+  "billing_street2": "Suite 100",
+  "billing_city": "Mumbai",
+  "billing_state": "MH",
+  "billing_pin_code": "400001",
+  "billing_phone": "0221234567",
+  "billing_fax": "0227654321",
+  "shipping_attention": "Warehouse",
+  "shipping_country": "India",
+  "shipping_street1": "456 Warehouse Rd",
+  "shipping_street2": "",
+  "shipping_city": "Mumbai",
+  "shipping_state": "MH",
+  "shipping_pin_code": "400002",
+  "shipping_phone": "0229876543",
+  "shipping_fax": "0223456789",
+  "contact_persons": [
+    {
+      "salutation": "ms",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "email": "jane@vendor.com",
+      "work_phone": "",
+      "mobile": ""
+    }
+  ],
+  "custom_fields": {"GSTIN": "27ABCDE1234F1Z5"},
+  "tags": ["priority", "2025"],
+  "remarks": "Important vendor"
 }
 
 ####
@@ -238,17 +278,23 @@ GET http://localhost:8000/api/vendors/1/
 Authorization: Bearer <access_token>
 
 ####
-# Update vendor
+
+# Update vendor (add/remove contact persons)
 PUT http://localhost:8000/api/vendors/1/
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
 {
-    "name": "Vendor Inc Updated",
-    "email": "vendor@example.com",
-    "company_name": "Vendor Incorporated",
-    "address": "789 Vendor Ave",
-    "phone": "9876543210"
+  "display_name": "Acme Vendor (Updated)",
+  "email": "john.doe@vendor.com",
+  "vendor_type": "business",
+  "company_name": "Acme Vendor",
+  "currency": "INR",
+  "payment_terms": "net_30",
+  "contact_persons": [
+    {"id": 1, "salutation": "ms", "first_name": "Jane", "last_name": "Smith", "email": "jane@vendor.com", "work_phone": "", "mobile": ""},
+    {"first_name": "New", "last_name": "Person", "email": "new@vendor.com", "work_phone": "", "mobile": "", "salutation": null}
+  ]
 }
 
 ####
