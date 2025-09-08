@@ -291,6 +291,10 @@ Authorization: Bearer <access_token>
 # {
 #   "id": 1,
 #   ...
+#   "item_details": [
+#     {"id": 1, "item": { ... }, "quantity": 2, "rate": "5000.00", "amount": "10000.00", "invoice_item_number": 1},
+#     {"id": 2, "item": { ... }, "quantity": 1, "rate": "1000.00", "amount": "1000.00", "invoice_item_number": 2}
+#   ],
 #   "attached_files": [
 #     {"id": 4, "file": "/media/customer_documents/file4.pdf", "uploaded_at": "..."},
 #     {"id": 5, "file": "/media/customer_documents/file5.pdf", "uploaded_at": "..."}

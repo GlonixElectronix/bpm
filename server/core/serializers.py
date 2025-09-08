@@ -111,13 +111,15 @@ class DeliveryChallanItemSerializer(serializers.ModelSerializer):
         queryset=Item.objects.all(), source="item", write_only=True  # pylint: disable=no-member
     )
 
+    delivery_challan_item_number = serializers.IntegerField(read_only=True)
+
     class Meta:  # pylint: disable=too-few-public-methods
         """Meta options for DeliveryChallanItemSerializer."""
         model = DeliveryChallanItem
         fields = [
-            "id", "item", "item_id", "quantity", "rate", "amount"
+            "id", "item", "item_id", "quantity", "rate", "amount", "delivery_challan_item_number"
         ]
-    read_only_fields = ["id", "item", "amount"]
+    read_only_fields = ["id", "item", "amount", "delivery_challan_item_number"]
 
 
 
@@ -129,13 +131,15 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
         queryset=Item.objects.all(), source="item", write_only=True  # pylint: disable=no-member
     )
 
+    invoice_item_number = serializers.IntegerField(read_only=True)
+
     class Meta:  # pylint: disable=too-few-public-methods
         """Meta options for InvoiceItemSerializer."""
         model = InvoiceItem
         fields = [
-            "id", "item", "item_id", "quantity", "rate", "amount"
+            "id", "item", "item_id", "quantity", "rate", "amount", "invoice_item_number"
         ]
-    read_only_fields = ["id", "item", "amount"]
+    read_only_fields = ["id", "item", "amount", "invoice_item_number"]
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -245,10 +249,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
             invoice.invoice_files.set(invoice_files)
         if attached_files:
             invoice.files.set(attached_files)
-        for item_data in item_details_data:
+        for idx, item_data in enumerate(item_details_data, 1):
             if "amount" not in item_data:
                 item_data["amount"] = item_data.get("quantity", 0) * item_data.get("rate", 0)
-            InvoiceItem.objects.create(invoice=invoice, **item_data)  # pylint: disable=no-member
+            InvoiceItem.objects.create(invoice=invoice, invoice_item_number=idx, **item_data)  # pylint: disable=no-member
+        invoice.refresh_from_db()
         return invoice
 
     def update(self, instance, validated_data):
@@ -511,10 +516,10 @@ class DeliveryChallanSerializer(serializers.ModelSerializer):
         challan = super().create(validated_data)
         if delivery_challan_files:
             challan.delivery_challan_files.set(delivery_challan_files)
-        for item_data in item_details_data:
+        for idx, item_data in enumerate(item_details_data, 1):
             if "amount" not in item_data:
                 item_data["amount"] = item_data.get("quantity", 0) * item_data.get("rate", 0)
-            DeliveryChallanItem.objects.create(delivery_challan=challan, **item_data)
+            DeliveryChallanItem.objects.create(delivery_challan=challan, delivery_challan_item_number=idx, **item_data)
         return challan
 
     def update(self, instance, validated_data):
@@ -529,6 +534,7 @@ class DeliveryChallanSerializer(serializers.ModelSerializer):
                 if "amount" not in item_data:
                     item_data["amount"] = item_data.get("quantity", 0) * item_data.get("rate", 0)
                 DeliveryChallanItem.objects.create(delivery_challan=challan, **item_data)
+        challan.refresh_from_db()
         return challan
 
 

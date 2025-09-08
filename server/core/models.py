@@ -558,10 +558,14 @@ class ProformaInvoiceItem(DocumentItemBase):
         related_name="item_details",
         on_delete=models.CASCADE,
     )
+    proforma_invoice_item_number = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("proforma_invoice", "proforma_invoice_item_number")
 
     def __str__(self):
         return (
-            f"{self.item.name} x {self.quantity} for Proforma "
+            f"[{self.proforma_invoice_item_number}] {self.item.name} x {self.quantity} for Proforma "
             f"{self.proforma_invoice.invoice_number}"  # pylint: disable=no-member
         )
 
@@ -573,10 +577,14 @@ class DeliveryChallanItem(DocumentItemBase):
         related_name="item_details",
         on_delete=models.CASCADE,
     )
+    delivery_challan_item_number = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("delivery_challan", "delivery_challan_item_number")
 
     def __str__(self):
         return (
-            f"{self.item.name} x {self.quantity} for Challan "
+            f"[{self.delivery_challan_item_number}] {self.item.name} x {self.quantity} for Challan "
             f"{self.delivery_challan.challan_number}"  # pylint: disable=no-member
         )
 
@@ -642,10 +650,14 @@ class InvoiceItem(DocumentItemBase):
         related_name="item_details",
         on_delete=models.CASCADE,
     )
+    invoice_item_number = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("invoice", "invoice_item_number")
 
     def __str__(self):
         return (
-            f"{self.item.name} x {self.quantity} for Invoice "  # pylint: disable=no-member
+            f"[{self.invoice_item_number}] {self.item.name} x {self.quantity} for Invoice "  # pylint: disable=no-member
             f"{self.invoice.invoice_number}"  # pylint: disable=no-member
         )
 

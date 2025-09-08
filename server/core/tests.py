@@ -67,6 +67,9 @@ class DeliveryChallanFileAttachmentTestCase(FileAttachmentTestBase):
         self.assertEqual(len(response.data["item_details"]), 2)
         self.assertEqual(response.data["item_details"][0]["quantity"], 2)
         self.assertEqual(response.data["item_details"][1]["rate"], "150.00")
+        # Check delivery_challan_item_number is present and correct
+        self.assertEqual(response.data["item_details"][0]["delivery_challan_item_number"], 1)
+        self.assertEqual(response.data["item_details"][1]["delivery_challan_item_number"], 2)
 
     def test_update_challan_with_item_details(self):
         """Test updating a DeliveryChallan with new item details."""
@@ -139,6 +142,9 @@ class InvoiceFileAttachmentTestCase(FileAttachmentTestBase):
         self.assertIn("item_details", response.data)
         self.assertEqual(len(response.data["item_details"]), 2)
         self.assertEqual(response.data["item_details"][0]["quantity"], 2)
+        # Check invoice_item_number is present and correct
+        self.assertEqual(response.data["item_details"][0]["invoice_item_number"], 1)
+        self.assertEqual(response.data["item_details"][1]["invoice_item_number"], 2)
     # Removed unused 'invoice_file_ids'
 
     def test_update_invoice_with_item_details(self):
@@ -373,9 +379,9 @@ class QuoteFileAttachmentTestCase(FileAttachmentTestBase):
         update_data["quote_number"] = "Q-2025-TEST-ITEMS-UPDATED"
         resp = self.client.put(update_url, update_data, format="json")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    self.assertEqual(len(resp.data["item_details"]), 1)
-    self.assertEqual(resp.data["item_details"][0]["quantity"], 5)
-    self.assertEqual(resp.data["item_details"][0]["quote_item_number"], 1)
+        self.assertEqual(len(resp.data["item_details"]), 1)
+        self.assertEqual(resp.data["item_details"][0]["quantity"], 5)
+        self.assertEqual(resp.data["item_details"][0]["quote_item_number"], 1)
 
     def test_update_quote_with_files(self):
         """Test updating a Quote with attached files."""

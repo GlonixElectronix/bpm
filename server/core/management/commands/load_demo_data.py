@@ -160,6 +160,19 @@ class Command(BaseCommand):
             quote_item_number=1,
         )
 
+        # Example for InvoiceItem, ProformaInvoiceItem, DeliveryChallanItem (future-proof, add real demo if needed)
+        # from core.models import InvoiceItem, ProformaInvoiceItem, DeliveryChallanItem, Invoice, ProformaInvoice, DeliveryChallan
+        # invoice = Invoice.objects.first()
+        # item = Item.objects.first()
+        # if invoice and item:
+        #     InvoiceItem.objects.create(invoice=invoice, item=item, quantity=1, rate=100, amount=100, invoice_item_number=1)
+        # proforma = ProformaInvoice.objects.first()
+        # if proforma and item:
+        #     ProformaInvoiceItem.objects.create(proforma_invoice=proforma, item=item, quantity=1, rate=100, amount=100, proforma_invoice_item_number=1)
+        # challan = DeliveryChallan.objects.first()
+        # if challan and item:
+        #     DeliveryChallanItem.objects.create(delivery_challan=challan, item=item, quantity=1, rate=100, amount=100, delivery_challan_item_number=1)
+
         # Customer Documents (dummy entries, not real files)
         CustomerDocument.objects.create(
             file='customer_documents/testfile.txt',
