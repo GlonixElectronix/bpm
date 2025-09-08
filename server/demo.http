@@ -174,15 +174,38 @@ GET http://localhost:8000/api/customers/1/
 Authorization: Bearer <access_token>
 
 ####
-# Update customer (partial or full)
+
+# Update customer (update, add, and remove contact persons)
 PUT http://localhost:8000/api/customers/1/
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
 {
-  "display_name": "Acme Corp (John D.)",
-  "remarks": "Updated remarks"
+  "display_name": "Acme Corp (Updated)",
+  "email": "john.doe@acme.com",
+  "customer_type": "business",
+  "company_name": "Acme Corp",
+  "currency": "INR",
+  "payment_terms": "net_30",
+  "contact_persons": [
+    {"id": 1, "salutation": "ms", "first_name": "Jane", "last_name": "Smith", "email": "jane@acme.com", "work_phone": "", "mobile": ""},
+    {"first_name": "New", "last_name": "Person", "email": "new@acme.com", "work_phone": "", "mobile": "", "salutation": null}
+  ]
 }
+
+# Response:
+# {
+#   ...
+#   "contact_persons": [
+#     {"id": 1, "salutation": "ms", "first_name": "Jane", "last_name": "Smith", "email": "jane@acme.com", "work_phone": "", "mobile": ""},
+#     {"id": 2, "salutation": null, "first_name": "New", "last_name": "Person", "email": "new@acme.com", "work_phone": "", "mobile": ""}
+#   ]
+#   ...
+# }
+
+# - Contact person with id 1 is updated in place.
+# - New contact person is created for "New Person".
+# - Any other contact persons previously associated with the customer are deleted.
 
 ####
 # Delete customer

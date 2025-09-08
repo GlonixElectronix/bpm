@@ -26,6 +26,7 @@ class CustomerDocumentSerializer(serializers.ModelSerializer):
 class ContactPersonSerializer(serializers.ModelSerializer):
 
     """Serializer for ContactPerson model."""
+    id = serializers.IntegerField(required=False)
     class Meta:  # pylint: disable=too-few-public-methods
         """Meta options for ContactPersonSerializer."""
         model = ContactPerson
@@ -172,14 +173,27 @@ class CustomerSerializer(serializers.ModelSerializer):
         contact_persons_data = validated_data.pop("contact_persons", None)
         instance = super().update(instance, validated_data)
         if contact_persons_data is not None:
-            # Remove existing contact persons
-            instance.contact_persons.all().delete()
-            # Add new contact persons
+            existing_cps = {cp.id: cp for cp in instance.contact_persons.all()}
+            sent_ids = set()
             for cp_data in contact_persons_data:
-                ContactPerson.objects.create(
-                    customer=instance,
-                    **cp_data
-                )  # pylint: disable=no-member
+                cp_id = cp_data.get("id")
+                if cp_id and cp_id in existing_cps:
+                    # Update existing
+                    cp = existing_cps[cp_id]
+                    for attr, value in cp_data.items():
+                        if attr != "id":
+                            setattr(cp, attr, value)
+                    cp.save()
+                    sent_ids.add(cp_id)
+                else:
+                    # Create new
+                    ContactPerson.objects.create(customer=instance, **{k: v for k, v in cp_data.items() if k != "id"})
+            # Only delete contact persons that are not in sent_ids and were not just created
+            for cp_id, cp in existing_cps.items():
+                if cp_id not in sent_ids:
+                    cp.delete()
+            # Refresh instance to get updated related objects
+            instance.refresh_from_db()
         return instance
 
 

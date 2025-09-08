@@ -120,6 +120,38 @@ Authorization: Bearer <access_token>
         }
     ],
     ...
+#### Example: Update Contact Persons (retain, add, remove)
+
+To update contact persons for a customer, make a PUT request to `/api/customers/{id}/` with the full customer data, including the `contact_persons` array. The update logic is as follows:
+
+- If a contact person in the array has an `id` matching an existing contact person, that contact person will be updated in place (ID retained).
+- If a contact person in the array does not have an `id`, a new contact person will be created.
+- Any existing contact person not included in the array will be deleted.
+
+**Example:**
+
+PUT /api/customers/1/
+Content-Type: application/json
+Authorization: Bearer <access_token>
+
+{
+    "display_name": "Acme Corp (Updated)",
+    "email": "john.doe@acme.com",
+    "customer_type": "business",
+    "company_name": "Acme Corp",
+    "currency": "INR",
+    "payment_terms": "net_30",
+    "contact_persons": [
+        {"id": 1, "salutation": "ms", "first_name": "Jane", "last_name": "Smith", "email": "jane@acme.com", "work_phone": "", "mobile": ""},
+        {"first_name": "New", "last_name": "Person", "email": "new@acme.com", "work_phone": "", "mobile": "", "salutation": null}
+    ]
+}
+
+**Result:**
+- Contact person with `id: 1` is updated in place.
+- A new contact person is created for "New Person".
+- Any other contact persons previously associated with the customer are deleted.
+
 #### Example: Retrieve Customer (with nested documents and contact persons)
  customer: Customer object (from Customers endpoint)
  quote_number: string (required, unique)

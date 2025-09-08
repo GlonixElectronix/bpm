@@ -1,4 +1,3 @@
-
 # pylint: disable=duplicate-code
 """Tests for core Django REST API endpoints and models."""
 
@@ -57,7 +56,7 @@ class DeliveryChallanFileAttachmentTestCase(FileAttachmentTestBase):
         response = self.client.post(url, self.challan_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn("delivery_challan_files", response.data)
-    # file_ids variable was unused and removed for lint compliance
+    # file_ids variable was unused for lint compliance
 
     def test_create_challan_with_item_details(self):
         """Test creating a DeliveryChallan with item details."""
@@ -523,7 +522,7 @@ class ProformaInvoiceFileAttachmentTestCase(FileAttachmentTestBase):
 
     def test_create_proforma_invoice_with_files(self):
         """Test creating a ProformaInvoice with attached files."""
-    # url variable was unused and removed for lint compliance
+    # url variable was unused for lint compliance
     # Removed line with undefined 'self' and 'url' for lint compliance
 
     def test_create_proforma_invoice_with_item_details(self):
@@ -570,3 +569,76 @@ class ProformaInvoiceFileAttachmentTestCase(FileAttachmentTestBase):
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 401)
+
+class CustomerContactPersonUpdateTests(APITestCase):
+    def setUp(self):
+        self.customer = Customer.objects.create(
+            display_name="Test Customer",
+            email="test@example.com",
+            customer_type="business",
+            company_name="Test Co",
+            currency="INR",
+            payment_terms="due_on_receipt"
+        )
+        self.cp1 = ContactPerson.objects.create(customer=self.customer, first_name="John", last_name="Doe", email="john@example.com")
+        self.cp2 = ContactPerson.objects.create(customer=self.customer, first_name="Jane", last_name="Smith", email="jane@example.com")
+        self.url = reverse("customer-detail", args=[self.customer.id])
+        self.client.force_authenticate(user=get_user_model().objects.create(username="u", password="p"))
+
+    def test_update_contact_person_retains_id(self):
+        data = {
+            "display_name": self.customer.display_name,
+            "email": self.customer.email,
+            "customer_type": self.customer.customer_type,
+            "company_name": self.customer.company_name,
+            "currency": self.customer.currency,
+            "payment_terms": self.customer.payment_terms,
+            "contact_persons": [
+                {"id": self.cp1.id, "first_name": "Johnny", "last_name": "Doe", "email": "john@example.com", "work_phone": "", "mobile": "", "salutation": None},
+                {"id": self.cp2.id, "first_name": "Jane", "last_name": "Smith", "email": "jane@example.com", "work_phone": "", "mobile": "", "salutation": None}
+            ]
+        }
+        resp = self.client.put(self.url, data, format="json")
+        self.assertEqual(resp.status_code, 200)
+        ids = [cp["id"] for cp in resp.data["contact_persons"]]
+        self.assertIn(self.cp1.id, ids)
+        self.assertIn(self.cp2.id, ids)
+        self.assertEqual(ContactPerson.objects.get(id=self.cp1.id).first_name, "Johnny")
+
+    def test_add_new_contact_person(self):
+        data = {
+            "display_name": self.customer.display_name,
+            "email": self.customer.email,
+            "customer_type": self.customer.customer_type,
+            "company_name": self.customer.company_name,
+            "currency": self.customer.currency,
+            "payment_terms": self.customer.payment_terms,
+            "contact_persons": [
+                {"id": self.cp1.id, "first_name": "John", "last_name": "Doe", "email": "john@example.com", "work_phone": "", "mobile": "", "salutation": None},
+                {"first_name": "New", "last_name": "Person", "email": "new@example.com", "work_phone": "", "mobile": "", "salutation": None}
+            ]
+        }
+        resp = self.client.put(self.url, data, format="json")
+        self.assertEqual(resp.status_code, 200)
+        emails = [cp["email"] for cp in resp.data["contact_persons"]]
+        self.assertIn("new@example.com", emails)
+        self.assertEqual(ContactPerson.objects.filter(customer=self.customer).count(), 2)
+
+    def test_remove_contact_person(self):
+        data = {
+            "display_name": self.customer.display_name,
+            "email": self.customer.email,
+            "customer_type": self.customer.customer_type,
+            "company_name": self.customer.company_name,
+            "currency": self.customer.currency,
+            "payment_terms": self.customer.payment_terms,
+            "contact_persons": [
+                {"id": self.cp2.id, "first_name": "Jane", "last_name": "Smith", "email": "jane@example.com", "work_phone": "", "mobile": "", "salutation": None}
+            ]
+        }
+        resp = self.client.put(self.url, data, format="json")
+        self.assertEqual(resp.status_code, 200)
+        ids = [cp["id"] for cp in resp.data["contact_persons"]]
+        self.assertIn(self.cp2.id, ids)
+        self.assertNotIn(self.cp1.id, ids)
+        self.assertEqual(ContactPerson.objects.filter(customer=self.customer).count(), 1)
