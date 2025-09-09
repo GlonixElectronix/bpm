@@ -48,6 +48,50 @@ class Command(BaseCommand):
             }
         )
 
+        # Inventory Management Demo Data
+        from core.inventory_management_models import InventoryManagement, InventoryItemDetail
+        inv1, _ = InventoryManagement.objects.get_or_create(
+            item_name="Demo Inventory Item 1",
+            unit="Nos",
+            type="Goods",
+            hsn_code="1001",
+            description="Demo inventory item 1 description",
+            selling_price=150.00,
+            purchase_price=120.00,
+            tax="18%",
+        )
+        InventoryItemDetail.objects.get_or_create(
+            inventory=inv1,
+            description="Batch A",
+            quantity=10,
+            adjustment=0,
+            amount=1500.00,
+        )
+        InventoryItemDetail.objects.get_or_create(
+            inventory=inv1,
+            description="Batch B",
+            quantity=5,
+            adjustment=1,
+            amount=750.00,
+        )
+        inv2, _ = InventoryManagement.objects.get_or_create(
+            item_name="Demo Inventory Item 2",
+            unit="Kgs",
+            type="Goods",
+            hsn_code="2002",
+            description="Demo inventory item 2 description",
+            selling_price=300.00,
+            purchase_price=250.00,
+            tax="12%",
+        )
+        InventoryItemDetail.objects.get_or_create(
+            inventory=inv2,
+            description="Batch X",
+            quantity=20,
+            adjustment=0,
+            amount=6000.00,
+        )
+
         # Customers
         customer1, _ = Customer.objects.get_or_create(
             email='acme@example.com',

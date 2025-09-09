@@ -18,7 +18,11 @@ from .views import (
     CustomerDocumentViewSet,
     ProfitAndLossReportView,
     BalanceSheetReportView,
+    InventoryManagementViewSet,
 )
+
+router = DefaultRouter()
+router.register(r"inventory-management", InventoryManagementViewSet, basename="inventorymanagement")
 
 
 router = DefaultRouter()

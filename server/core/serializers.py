@@ -1,3 +1,53 @@
+from rest_framework import serializers
+from .inventory_management_models import InventoryManagement, InventoryItemDetail
+
+class InventoryItemDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryItemDetail
+        fields = [
+            'id',
+            'description',
+            'quantity',
+            'adjustment',
+            'amount',
+        ]
+
+
+class InventoryManagementSerializer(serializers.ModelSerializer):
+    item_details = InventoryItemDetailSerializer(many=True, required=False)
+
+    class Meta:
+        model = InventoryManagement
+        fields = [
+            'id',
+            'item_name',
+            'unit',
+            'type',
+            'hsn_code',
+            'description',
+            'selling_price',
+            'purchase_price',
+            'tax',
+            'item_details',
+        ]
+
+    def create(self, validated_data):
+        item_details_data = validated_data.pop('item_details', [])
+        inventory = InventoryManagement.objects.create(**validated_data)
+        for detail_data in item_details_data:
+            InventoryItemDetail.objects.create(inventory=inventory, **detail_data)
+        return inventory
+
+    def update(self, instance, validated_data):
+        item_details_data = validated_data.pop('item_details', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if item_details_data is not None:
+            instance.item_details.all().delete()
+            for detail_data in item_details_data:
+                InventoryItemDetail.objects.create(inventory=instance, **detail_data)
+        return instance
 """Serializers for core Django models."""
 
 from rest_framework import serializers

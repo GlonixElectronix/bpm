@@ -1,3 +1,57 @@
+### INVENTORY MANAGEMENT CRUD
+
+# List inventory management records
+GET http://localhost:8000/api/inventory-management/
+Authorization: Bearer <access_token>
+
+####
+# Create inventory management record
+POST http://localhost:8000/api/inventory-management/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "item_name": "Test Item",
+  "unit": "Nos",
+  "type": "Goods",
+  "hsn_code": "1234",
+  "description": "Test description",
+  "selling_price": "100.00",
+  "purchase_price": "80.00",
+  "tax": "18%",
+  "item_details": [
+    {"description": "Batch 1", "quantity": "10.00", "adjustment": "0.00", "amount": "1000.00"},
+    {"description": "Batch 2", "quantity": "5.00", "adjustment": "1.00", "amount": "500.00"}
+  ]
+}
+
+####
+# Retrieve inventory management record
+GET http://localhost:8000/api/inventory-management/1/
+Authorization: Bearer <access_token>
+
+####
+# Update inventory management record
+PUT http://localhost:8000/api/inventory-management/1/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "item_name": "Updated Name",
+  "unit": "Nos",
+  "type": "Goods",
+  "hsn_code": "9999",
+  "description": "desc",
+  "selling_price": "300.00",
+  "purchase_price": "250.00",
+  "tax": "5%",
+  "item_details": []
+}
+
+####
+# Delete inventory management record
+DELETE http://localhost:8000/api/inventory-management/1/
+Authorization: Bearer <access_token>
 ### AUTHENTICATION
 
 # Obtain JWT token

@@ -1,4 +1,16 @@
 
+from .inventory_management_models import InventoryManagement
+from .serializers import InventoryManagementSerializer
+# ...existing code...
+
+# Inventory Management CRUD endpoint
+from rest_framework import viewsets, permissions
+
+class InventoryManagementViewSet(viewsets.ModelViewSet):
+    queryset = InventoryManagement.objects.all()
+    serializer_class = InventoryManagementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
 # pylint: disable=no-member, import-outside-toplevel, import-self, redefined-outer-name
 """Views for core Django REST API endpoints."""
 

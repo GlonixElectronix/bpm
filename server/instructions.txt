@@ -1138,8 +1138,84 @@ Authorization: Bearer <access_token>
 - 400: Invalid time parameter
 - 401: Unauthorized
 
+
+### Inventory Management CRUD
+
+#### Endpoints
+- List:      GET    /api/inventory-management/
+- Create:    POST   /api/inventory-management/
+- Retrieve:  GET    /api/inventory-management/{id}/
+- Update:    PUT    /api/inventory-management/{id}/
+- Delete:    DELETE /api/inventory-management/{id}/
+
+#### Fields
+- id: integer (auto)
+- item_name: string (required)
+- unit: string (choices: Nos, Kgs, Litres; required)
+- type: string (choices: Goods, Service; required)
+- hsn_code: string (optional)
+- description: string (optional)
+- selling_price: decimal (optional)
+- purchase_price: decimal (optional)
+- tax: string (choices: 18%, 12%, 5%, 0%; required)
+- item_details: list of InventoryItemDetail objects (optional)
+
+Each InventoryItemDetail:
+- id: integer (auto)
+- description: string (optional)
+- quantity: decimal (required)
+- adjustment: decimal (optional)
+- amount: decimal (required)
+
+#### Example: Create Inventory Management Record
+POST /api/inventory-management/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+    "item_name": "Test Item",
+    "unit": "Nos",
+    "type": "Goods",
+    "hsn_code": "1234",
+    "description": "Test description",
+    "selling_price": "100.00",
+    "purchase_price": "80.00",
+    "tax": "18%",
+    "item_details": [
+        {"description": "Batch 1", "quantity": "10.00", "adjustment": "0.00", "amount": "1000.00"},
+        {"description": "Batch 2", "quantity": "5.00", "adjustment": "1.00", "amount": "500.00"}
+    ]
+}
+
+#### Example: Retrieve Inventory Management Record
+GET /api/inventory-management/1/
+Authorization: Bearer <access_token>
+
+#### Example: Update Inventory Management Record
+PUT /api/inventory-management/1/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+    "item_name": "Updated Name",
+    "unit": "Nos",
+    "type": "Goods",
+    "hsn_code": "9999",
+    "description": "desc",
+    "selling_price": "300.00",
+    "purchase_price": "250.00",
+    "tax": "5%",
+    "item_details": []
+}
+
+#### Example: Delete Inventory Management Record
+DELETE /api/inventory-management/1/
+Authorization: Bearer <access_token>
+
 #### Notes
-- The report is always up to date with all CRUD changes to Invoices, Bills, and Payments.
+- All endpoints require authentication (JWT access token).
+- item_details can be omitted or empty for simple records.
+- All CRUD operations are supported.
 
 ## 6. Background Pre-Aggregation (Performance Optimization)
 
