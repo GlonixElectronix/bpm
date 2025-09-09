@@ -5,6 +5,7 @@
 # pylint: disable=no-member,too-many-instance-attributes,too-few-public-methods
 import os
 import tempfile
+from decimal import Decimal
 
 # Third-party imports
 from django.core.files import File
@@ -20,7 +21,7 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 # Local imports
 from .models import (
     Vendor, Item, Invoice, Bill, ContactPerson, DeliveryChallan, ProformaInvoice,
-    InventoryAdjustment, Customer, CustomerDocument, Quote, DailySummary
+    InventoryAdjustment, Customer, CustomerDocument, Quote, DailySummary, BillItem, InvoiceItem
 )
 from .serializers import CustomerDocumentSerializer
 
@@ -649,3 +650,80 @@ class CustomerContactPersonUpdateTests(APITestCase):
         self.assertIn(self.cp2.id, ids)
         self.assertNotIn(self.cp1.id, ids)
         self.assertEqual(ContactPerson.objects.filter(customer=self.customer).count(), 1)
+
+class InventoryTrackingOnBillInvoiceTestCase(APITestCase):
+    def setUp(self):
+        self.item = Item.objects.create(
+            name="Test Item",
+            unit="Nos",
+            price=Decimal("10.00"),
+            sku="TEST-ITEM-001",
+            track_inventory=True,
+            inventory_account="Inventory",
+            inventory_valuation_method="FIFO",
+            opening_stock=Decimal("100.00"),
+            opening_stock_rate_per_unit=Decimal("10.00"),
+            current_stock=Decimal("100.00"),
+        )
+        self.vendor = Vendor.objects.create(display_name="Test Vendor", email="vendor@example.com")
+        self.customer = Customer.objects.create(display_name="Test Customer", email="customer@example.com")
+        self.bill = Bill.objects.create(
+            vendor=self.vendor,
+            bill_number="BILL-001",
+            bill_date="2025-09-08",
+            due_date="2025-09-15",
+            subtotal=Decimal("100.00"),
+            tax=Decimal("0.00"),
+            total_amount=Decimal("100.00"),
+        )
+        self.invoice = Invoice.objects.create(
+            customer=self.customer,
+            invoice_number="INV-001",
+            invoice_date="2025-09-08",
+            total_amount=Decimal("100.00"),
+        )
+
+    def test_billitem_increases_stock(self):
+        BillItem.objects.create(bill=self.bill, item=self.item, quantity=10, rate=Decimal("10.00"), amount=Decimal("100.00"))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("110.00"))
+
+    def test_invoiceitem_decreases_stock(self):
+        InvoiceItem.objects.create(invoice=self.invoice, item=self.item, quantity=5, rate=Decimal("10.00"), amount=Decimal("50.00"))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("95.00"))
+
+    def test_billitem_update_adjusts_stock(self):
+        bill_item = BillItem.objects.create(bill=self.bill, item=self.item, quantity=10, rate=Decimal("10.00"), amount=Decimal("100.00"))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("110.00"))
+        bill_item.quantity = 5
+        bill_item.save()
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("105.00"))
+
+    def test_invoiceitem_update_adjusts_stock(self):
+        invoice_item = InvoiceItem.objects.create(invoice=self.invoice, item=self.item, quantity=5, rate=Decimal("10.00"), amount=Decimal("50.00"))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("95.00"))
+        invoice_item.quantity = 2
+        invoice_item.save()
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("98.00"))
+
+    def test_billitem_delete_reverts_stock(self):
+        bill_item = BillItem.objects.create(bill=self.bill, item=self.item, quantity=10, rate=Decimal("10.00"), amount=Decimal("100.00"))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("110.00"))
+        bill_item.delete()
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("100.00"))
+
+    def test_invoiceitem_delete_reverts_stock(self):
+        invoice_item = InvoiceItem.objects.create(invoice=self.invoice, item=self.item, quantity=5, rate=Decimal("10.00"), amount=Decimal("50.00"))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("95.00"))
+        invoice_item.delete()
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.current_stock, Decimal("100.00"))
+

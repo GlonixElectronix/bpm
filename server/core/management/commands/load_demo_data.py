@@ -22,6 +22,9 @@ class Command(BaseCommand):
                 'description': 'A widget',
                 'price': 500.00,
                 'sku': 'WIDGET-A-001',
+                'track_inventory': True,
+                'opening_stock': 100,
+                'current_stock': 100,
             }
         )
         item2, _ = Item.objects.get_or_create(
@@ -30,6 +33,9 @@ class Command(BaseCommand):
                 'description': 'B widget',
                 'price': 1000.00,
                 'sku': 'WIDGET-B-002',
+                'track_inventory': True,
+                'opening_stock': 50,
+                'current_stock': 50,
             }
         )
         item3, _ = Item.objects.get_or_create(
@@ -38,6 +44,7 @@ class Command(BaseCommand):
                 'description': 'X gadget',
                 'price': 800.00,
                 'sku': 'GADGET-X-003',
+                'track_inventory': False,
             }
         )
 

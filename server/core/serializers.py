@@ -48,7 +48,40 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:  # pylint: disable=too-few-public-methods
         """Meta options for ItemSerializer."""
         model = Item
-        fields = ["id", "name", "description", "price", "sku", "created_at"]
+        fields = [
+            'id', 'name', 'unit',
+            'manage_sales_info', 'sales_selling_price', 'sales_account', 'sales_description',
+            'manage_purchase_info', 'purchase_cost_price', 'purchase_account', 'purchase_description', 'preferred_vendor',
+            'track_inventory', 'inventory_account', 'inventory_valuation_method', 'opening_stock', 'opening_stock_rate_per_unit', 'reorder_point',
+            'description', 'price', 'sku', 'created_at',
+        ]
+
+    def validate(self, data):
+        errors = {}
+        if data.get('manage_sales_info'):
+            if data.get('sales_selling_price') is None:
+                errors['sales_selling_price'] = 'This field is required when managing sales info.'
+            if not data.get('sales_account'):
+                errors['sales_account'] = 'This field is required when managing sales info.'
+        if data.get('manage_purchase_info'):
+            if data.get('purchase_cost_price') is None:
+                errors['purchase_cost_price'] = 'This field is required when managing purchase info.'
+            if not data.get('purchase_account'):
+                errors['purchase_account'] = 'This field is required when managing purchase info.'
+        if data.get('track_inventory'):
+            if not data.get('inventory_account'):
+                errors['inventory_account'] = 'This field is required when tracking inventory.'
+            if not data.get('inventory_valuation_method'):
+                errors['inventory_valuation_method'] = 'This field is required when tracking inventory.'
+            if data.get('opening_stock') is None:
+                errors['opening_stock'] = 'This field is required when tracking inventory.'
+            if data.get('opening_stock_rate_per_unit') is None:
+                errors['opening_stock_rate_per_unit'] = 'This field is required when tracking inventory.'
+            if data.get('reorder_point') is None:
+                errors['reorder_point'] = 'This field is required when tracking inventory.'
+        if errors:
+            raise serializers.ValidationError(errors)
+        return data
         read_only_fields = ["id", "created_at"]
 
 

@@ -378,16 +378,100 @@ GET http://localhost:8000/api/items/
 Authorization: Bearer <access_token>
 
 ####
-# Create item
+
+# Create item (basic)
 POST http://localhost:8000/api/items/
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
 {
-    "name": "Item 1",
-    "description": "A sample item",
-    "price": "10.00",
-    "sku": "SKU001"
+  "name": "Item 1",
+  "unit": "Nos",
+  "description": "A sample item",
+  "price": "10.00",
+  "sku": "SKU001"
+}
+
+# Create item (with sales info)
+POST http://localhost:8000/api/items/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "Sales Item",
+  "unit": "Kgs",
+  "manage_sales_info": true,
+  "sales_selling_price": "100.00",
+  "sales_account": "Sales",
+  "sales_description": "Sales item description",
+  "description": "A sales item",
+  "price": "100.00",
+  "sku": "SKU_SALES"
+}
+
+# Create item (with purchase info)
+POST http://localhost:8000/api/items/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "Purchase Item",
+  "unit": "Litres",
+  "manage_purchase_info": true,
+  "purchase_cost_price": "80.00",
+  "purchase_account": "Cost of Goods Sold",
+  "purchase_description": "Purchase item description",
+  "preferred_vendor": 1,
+  "description": "A purchase item",
+  "price": "80.00",
+  "sku": "SKU_PURCHASE"
+}
+
+# Create item (with inventory tracking)
+POST http://localhost:8000/api/items/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "Inventory Item",
+  "unit": "Nos",
+  "track_inventory": true,
+  "inventory_account": "Inventory",
+  "inventory_valuation_method": "FIFO",
+  "opening_stock": "100.00",
+  "opening_stock_rate_per_unit": "10.00",
+  "reorder_point": "20.00",
+  "description": "An inventory item",
+  "price": "10.00",
+  "sku": "SKU_INV"
+}
+
+# Create item (all fields)
+POST http://localhost:8000/api/items/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "Full Item",
+  "unit": "Kgs",
+  "manage_sales_info": true,
+  "sales_selling_price": "200.00",
+  "sales_account": "Sales",
+  "sales_description": "Full item sales",
+  "manage_purchase_info": true,
+  "purchase_cost_price": "150.00",
+  "purchase_account": "Cost of Goods Sold",
+  "purchase_description": "Full item purchase",
+  "preferred_vendor": 1,
+  "track_inventory": true,
+  "inventory_account": "Inventory",
+  "inventory_valuation_method": "FIFO",
+  "opening_stock": "50.00",
+  "opening_stock_rate_per_unit": "3.00",
+  "reorder_point": "10.00",
+  "description": "A full-featured item",
+  "price": "200.00",
+  "sku": "SKU_FULL"
 }
 
 ####

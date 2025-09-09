@@ -16,6 +16,15 @@ class DailySummary(models.Model):
 
 
 class BillItem(models.Model):
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = BillItem.objects.get(pk=self.pk)
+            self._old_quantity = old.quantity
+            self._old_item_id = old.item_id
+        else:
+            self._old_quantity = None
+            self._old_item_id = None
+        super().save(*args, **kwargs)
     """Model representing an item entry in a Bill."""
     # ...existing code...
 
@@ -428,11 +437,68 @@ class Vendor(models.Model):
 class Item(models.Model):
     """Represents an item that can be billed, quoted, or invoiced."""
 
+    UNIT_CHOICES = [
+        ("Nos", "Nos"),
+        ("Kgs", "Kgs"),
+        ("Litres", "Litres"),
+    ]
+
     name = models.CharField(max_length=255)
+    unit = models.CharField(max_length=10, choices=UNIT_CHOICES, default="Nos")
+
+    # Sales Information
+    manage_sales_info = models.BooleanField(default=False)
+    sales_selling_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    sales_account = models.CharField(max_length=100, default="Sales", blank=True)
+    sales_description = models.TextField(blank=True)
+
+    # Purchase Information
+    manage_purchase_info = models.BooleanField(default=False)
+    purchase_cost_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    purchase_account = models.CharField(max_length=100, default="Cost of Goods Sold", blank=True)
+    purchase_description = models.TextField(blank=True)
+    preferred_vendor = models.ForeignKey('Vendor', null=True, blank=True, on_delete=models.SET_NULL)
+
+    # Inventory Tracking
+    track_inventory = models.BooleanField(default=False)
+    inventory_account = models.CharField(max_length=100, blank=True)
+    inventory_valuation_method = models.CharField(max_length=50, blank=True)
+    opening_stock = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    opening_stock_rate_per_unit = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    reorder_point = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    current_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # Legacy fields
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sku = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        errors = {}
+        if self.manage_sales_info:
+            if self.sales_selling_price is None:
+                errors['sales_selling_price'] = 'This field is required when managing sales info.'
+            if not self.sales_account:
+                errors['sales_account'] = 'This field is required when managing sales info.'
+        if self.manage_purchase_info:
+            if self.purchase_cost_price is None:
+                errors['purchase_cost_price'] = 'This field is required when managing purchase info.'
+            if not self.purchase_account:
+                errors['purchase_account'] = 'This field is required when managing purchase info.'
+        if self.track_inventory:
+            if not self.inventory_account:
+                errors['inventory_account'] = 'This field is required when tracking inventory.'
+            if not self.inventory_valuation_method:
+                errors['inventory_valuation_method'] = 'This field is required when tracking inventory.'
+            if self.opening_stock is None:
+                errors['opening_stock'] = 'This field is required when tracking inventory.'
+            if self.opening_stock_rate_per_unit is None:
+                errors['opening_stock_rate_per_unit'] = 'This field is required when tracking inventory.'
+            if self.reorder_point is None:
+                errors['reorder_point'] = 'This field is required when tracking inventory.'
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self) -> str:
         """String representation of Item."""
@@ -715,6 +781,15 @@ class InventoryAdjustment(models.Model):
 
 
 class InvoiceItem(DocumentItemBase):
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = InvoiceItem.objects.get(pk=self.pk)
+            self._old_quantity = old.quantity
+            self._old_item_id = old.item_id
+        else:
+            self._old_quantity = None
+            self._old_item_id = None
+        super().save(*args, **kwargs)
     """Model representing an item entry in an Invoice."""
     invoice = models.ForeignKey(
         "Invoice",
