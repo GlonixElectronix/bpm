@@ -114,6 +114,38 @@ class ModelStrCoverageTestCase(APITestCase):  # pylint: disable=too-many-instanc
   
 
 class CustomerDocumentFileTests(APITestCase):
+    def test_download_pdf_file(self):
+        """Test downloading a PDF file from the Files endpoint."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        pdf_file = SimpleUploadedFile("sample.pdf", b"%PDF-1.4 dummy pdf content", content_type="application/pdf")
+        doc = CustomerDocument.objects.create(file=pdf_file)
+        url = reverse("file-detail", args=[doc.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Content-Disposition", resp)
+        self.assertEqual(resp["Content-Type"], "application/pdf")
+
+    def test_download_jpg_file(self):
+        """Test downloading a JPG file from the Files endpoint."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        jpg_file = SimpleUploadedFile("sample.jpg", b"\xff\xd8\xff dummy jpg content", content_type="image/jpeg")
+        doc = CustomerDocument.objects.create(file=jpg_file)
+        url = reverse("file-detail", args=[doc.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Content-Disposition", resp)
+        self.assertEqual(resp["Content-Type"], "image/jpeg")
+
+    def test_download_png_file(self):
+        """Test downloading a PNG file from the Files endpoint."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        png_file = SimpleUploadedFile("sample.png", b"\x89PNG\r\n\x1a\n dummy png content", content_type="image/png")
+        doc = CustomerDocument.objects.create(file=png_file)
+        url = reverse("file-detail", args=[doc.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Content-Disposition", resp)
+        self.assertEqual(resp["Content-Type"], "image/png")
     """Test file upload, update, and validation for CustomerDocument API endpoints."""
     def setUp(self):
         """Set up test user, file, and API request factory for CustomerDocument tests."""
