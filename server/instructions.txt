@@ -348,13 +348,11 @@ Authorization: Bearer <access_token>
 - Update:    PUT    /api/items/{id}/
 - Delete:    DELETE /api/items/{id}/
 
-#### Item Fields (2025-09-08)
+
+#### Item Fields (2025-09-11)
 - id: integer (read-only)
 - name: string (required)
 - unit: "Nos", "Kgs", "Litres" (default: "Nos")
-- description: string (optional)
-- price: decimal (required)
-- sku: string (required, unique)
 - created_at: datetime (read-only)
 
 **Sales Information**
@@ -368,6 +366,16 @@ Authorization: Bearer <access_token>
 - purchase_cost_price: decimal (required if manage_purchase_info is true)
 - purchase_account: string (required if manage_purchase_info is true, default: "Cost of Goods Sold")
 - purchase_description: string (optional)
+- preferred_vendor: integer (optional, FK)
+
+**Inventory Tracking**
+- track_inventory: boolean (default: false)
+- inventory_account: string (required if track_inventory is true)
+- inventory_valuation_method: string (required if track_inventory is true)
+- opening_stock: decimal (required if track_inventory is true)
+- opening_stock_rate_per_unit: decimal (required if track_inventory is true)
+- reorder_point: decimal (required if track_inventory is true)
+- current_stock: decimal (default: 0)
 - preferred_vendor: integer (optional, Vendor ID)
 
 **Inventory Tracking**

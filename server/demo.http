@@ -440,10 +440,7 @@ Content-Type: application/json
 
 {
   "name": "Item 1",
-  "unit": "Nos",
-  "description": "A sample item",
-  "price": "10.00",
-  "sku": "SKU001"
+  "unit": "Nos"
 }
 
 # Create item (with sales info)
@@ -457,10 +454,7 @@ Content-Type: application/json
   "manage_sales_info": true,
   "sales_selling_price": "100.00",
   "sales_account": "Sales",
-  "sales_description": "Sales item description",
-  "description": "A sales item",
-  "price": "100.00",
-  "sku": "SKU_SALES"
+  "sales_description": "Sales item description"
 }
 
 # Create item (with purchase info)
@@ -475,10 +469,7 @@ Content-Type: application/json
   "purchase_cost_price": "80.00",
   "purchase_account": "Cost of Goods Sold",
   "purchase_description": "Purchase item description",
-  "preferred_vendor": 1,
-  "description": "A purchase item",
-  "price": "80.00",
-  "sku": "SKU_PURCHASE"
+  "preferred_vendor": 1
 }
 
 # Create item (with inventory tracking)
@@ -494,10 +485,7 @@ Content-Type: application/json
   "inventory_valuation_method": "FIFO",
   "opening_stock": "100.00",
   "opening_stock_rate_per_unit": "10.00",
-  "reorder_point": "20.00",
-  "description": "An inventory item",
-  "price": "10.00",
-  "sku": "SKU_INV"
+  "reorder_point": "20.00"
 }
 
 # Create item (all fields)
@@ -522,10 +510,7 @@ Content-Type: application/json
   "inventory_valuation_method": "FIFO",
   "opening_stock": "50.00",
   "opening_stock_rate_per_unit": "3.00",
-  "reorder_point": "10.00",
-  "description": "A full-featured item",
-  "price": "200.00",
-  "sku": "SKU_FULL"
+  "reorder_point": "10.00"
 }
 
 ####

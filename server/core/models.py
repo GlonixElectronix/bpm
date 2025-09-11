@@ -468,10 +468,7 @@ class Item(models.Model):
     reorder_point = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     current_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    # Legacy fields
-    description = models.TextField(blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    sku = models.CharField(max_length=100, unique=True)
+    # Legacy fields removed: description, price, sku
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):

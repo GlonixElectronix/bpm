@@ -103,7 +103,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'manage_sales_info', 'sales_selling_price', 'sales_account', 'sales_description',
             'manage_purchase_info', 'purchase_cost_price', 'purchase_account', 'purchase_description', 'preferred_vendor',
             'track_inventory', 'inventory_account', 'inventory_valuation_method', 'opening_stock', 'opening_stock_rate_per_unit', 'reorder_point',
-            'description', 'price', 'sku', 'created_at',
+            'created_at',
         ]
 
     def validate(self, data):

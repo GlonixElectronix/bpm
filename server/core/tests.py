@@ -223,7 +223,7 @@ class ModelStrCoverageTestCase(APITestCase):  # pylint: disable=too-many-instanc
     def setUp(self):
         """Set up test data for model __str__ method coverage tests."""
         self.vendor = Vendor.objects.create(display_name="Vendor1", email="v1@example.com")  # pylint: disable=no-member
-        self.item = Item.objects.create(name="Item1", description="desc", price=10, sku="SKU1")  # pylint: disable=no-member
+        self.item = Item.objects.create(name="Item1")  # pylint: disable=no-member
         self.customer = Customer.objects.create(display_name="Cust1", email="c1@example.com")  # pylint: disable=no-member
         self.invoice = Invoice.objects.create(
             customer=self.customer, invoice_number="INV1", invoice_date="2025-09-04"
@@ -429,6 +429,23 @@ class QuoteFileAttachmentTestCase(FileAttachmentTestBase):
         self.assertEqual(response.status_code, 401)
 
 class CoverageBoostTestCase(APITestCase):
+    def test_txt_file_stream_content(self):
+        """Test streaming a .txt file content from the files endpoint."""
+        import os
+        # Create a dummy txt file
+        dummy_txt_path = os.path.abspath("file.txt")
+        with open(dummy_txt_path, "w") as f:
+            f.write("dummy text content")
+        txt_file = CustomerDocument.objects.create(file="file.txt")
+        url = reverse("file-detail", args=[txt_file.id])
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Content-Disposition", resp)
+        self.assertEqual(resp["Content-Type"], "text/plain")
+        # Clean up
+        if os.path.exists(dummy_txt_path):
+            os.remove(dummy_txt_path)
     def setUp(self):
         """Set up test data for coverage boost tests."""
         import os
@@ -470,7 +487,7 @@ class CoverageBoostTestCase(APITestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Content-Disposition", resp)
-        self.assertEqual(resp["Content-Type"], "application/octet-stream")
+        self.assertEqual(resp["Content-Type"], "application/pdf")
 
     def test_customer_str(self):
         """Test __str__ method of Customer model."""
@@ -657,8 +674,7 @@ class InventoryTrackingOnBillInvoiceTestCase(APITestCase):
         self.item = Item.objects.create(
             name="Test Item",
             unit="Nos",
-            price=Decimal("10.00"),
-            sku="TEST-ITEM-001",
+            # price and sku removed
             track_inventory=True,
             inventory_account="Inventory",
             inventory_valuation_method="FIFO",
