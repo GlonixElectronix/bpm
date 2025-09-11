@@ -11,6 +11,7 @@ class InventoryManagementViewSet(viewsets.ModelViewSet):
     serializer_class = InventoryManagementSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 # pylint: disable=no-member, import-outside-toplevel, import-self, redefined-outer-name
 """Views for core Django REST API endpoints."""
 
@@ -21,6 +22,7 @@ import calendar
 # Third-party imports
 from django.db.models import Sum, Q
 from rest_framework import viewsets, permissions, status
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -38,8 +40,10 @@ from .models import (
     Payment,
     ProformaInvoice,
     Quote,
-    Vendor,
+    Vendor
 )
+from .filters import QuoteFilter
+from .filters_extra import InvoiceFilter, ProformaInvoiceFilter, DeliveryChallanFilter, BillFilter
 from .serializers import (
     BillSerializer,
     CustomerDocumentSerializer,
@@ -177,6 +181,8 @@ class CustomerDocumentViewSet(viewsets.ModelViewSet):  # pylint: disable=too-man
     queryset = CustomerDocument.objects.all().order_by("-uploaded_at")  # pylint: disable=no-member,too-many-ancestors
     serializer_class = CustomerDocumentSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    # No filterset_class for CustomerDocumentViewSet
     parser_classes = [MultiPartParser, FormParser]
 
 
@@ -221,12 +227,14 @@ class CustomerDocumentViewSet(viewsets.ModelViewSet):  # pylint: disable=too-man
 class BillViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
     """ViewSet for managing Bills."""
     queryset = (
-    Bill.objects.select_related("vendor")  # pylint: disable=no-member,too-many-ancestors
-        .prefetch_related("billitem_set")
+        Bill.objects.select_related("vendor")  # pylint: disable=no-member,too-many-ancestors
+        .prefetch_related("item_details")
         .order_by("-created_at")
     )
     serializer_class = BillSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = BillFilter
 
 
 class CustomerViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
@@ -248,6 +256,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancesto
     )
     serializer_class = InvoiceSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = InvoiceFilter
 
 
 class VendorViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
@@ -274,12 +284,14 @@ class PaymentViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancesto
 class QuoteViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
     """ViewSet for managing Quotes."""
     queryset = (
-    Quote.objects.select_related("customer")  # pylint: disable=no-member,too-many-ancestors
+        Quote.objects.select_related("customer")
         .prefetch_related("item_details", "quote_files")
         .order_by("-created_at")
     )
     serializer_class = QuoteSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = QuoteFilter
 
 
 class ProformaInvoiceViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
@@ -291,6 +303,8 @@ class ProformaInvoiceViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many
     )
     serializer_class = ProformaInvoiceSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProformaInvoiceFilter
 
 
 class DeliveryChallanViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
@@ -302,6 +316,8 @@ class DeliveryChallanViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many
     )
     serializer_class = DeliveryChallanSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = DeliveryChallanFilter
 
 
 class InventoryAdjustmentViewSet(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
@@ -326,7 +342,9 @@ class ProfitAndLossReportView(APIView):
         time_param = request.query_params.get("time", "This Month")
         basis = request.query_params.get("basis", "Accrual")
         compare_with = request.query_params.get("compare_with", "None")
+
         customer_id = request.query_params.get("customer_id")
+        vendor_id = request.query_params.get("vendor_id")
 
         start_date, end_date = self._get_range(time_param, today)
         if not start_date or not end_date:
@@ -342,6 +360,7 @@ class ProfitAndLossReportView(APIView):
             end_date,
             summary_only=summary_only,
             customer_id=customer_id,
+            vendor_id=vendor_id,
         )
         compare_data = None
         if compare_start and compare_end:
@@ -350,6 +369,7 @@ class ProfitAndLossReportView(APIView):
                 compare_end,
                 summary_only=summary_only,
                 customer_id=customer_id,
+                vendor_id=vendor_id,
             )
 
         response = {
@@ -386,7 +406,8 @@ class ProfitAndLossReportView(APIView):
             return None, None
         return start, end
 
-    def _get_report(self, start_date, end_date, summary_only=False, customer_id=None):  # pylint: disable=too-many-locals
+
+    def _get_report(self, start_date, end_date, summary_only=False, customer_id=None, vendor_id=None):  # pylint: disable=too-many-locals
         invoice_filter = Q(invoice_date__gte=start_date, invoice_date__lte=end_date)
         if customer_id:
             invoice_filter &= Q(customer_id=customer_id)
@@ -394,6 +415,8 @@ class ProfitAndLossReportView(APIView):
         operating_income = invoices.aggregate(total=Sum("total_amount"))['total'] or 0
 
         bill_filter = Q(bill_date__gte=start_date, bill_date__lte=end_date)
+        if vendor_id:
+            bill_filter &= Q(vendor_id=vendor_id)
         bills = Bill.objects.filter(bill_filter)  # pylint: disable=no-member
         cost_of_goods_sold = bills.aggregate(total=Sum("total_amount"))['total'] or 0
 
@@ -427,7 +450,7 @@ class ProfitAndLossReportView(APIView):
                     "id": bill.id,
                     "bill_number": bill.bill_number,
                     "date": bill.bill_date,
-                    "vendor": bill.vendor.name,
+                    "vendor": bill.vendor.display_name,
                     "total_amount": float(bill.total_amount),
                 }
                 for bill in bills

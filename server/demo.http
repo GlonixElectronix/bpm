@@ -272,21 +272,41 @@ Authorization: Bearer <access_token>
 GET http://localhost:8000/api/vendors/
 Authorization: Bearer <access_token>
 
+# List quotes for a specific customer
+GET http://localhost:8000/api/quotes/?customer_id=1
+Authorization: Bearer <access_token>
+
 ####
 
 # Create vendor (all fields)
+
+# List invoices for a specific customer
+GET http://localhost:8000/api/invoices/?customer_id=1
+Authorization: Bearer <access_token>
 POST http://localhost:8000/api/vendors/
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
+
+# List proforma invoices for a specific customer
+GET http://localhost:8000/api/proforma-invoices/?customer_id=1
+Authorization: Bearer <access_token>
 {
   "vendor_type": "business",
   "salutation": "mr",
   "first_name": "John",
+
+# List delivery challans for a specific customer
+GET http://localhost:8000/api/delivery-challans/?customer_id=1
+Authorization: Bearer <access_token>
   "last_name": "Doe",
   "company_name": "Acme Vendor",
   "display_name": "Acme Vendor (John Doe)",
   "email": "john.doe@vendor.com",
+
+# List bills for a specific vendor
+GET http://localhost:8000/api/bills/?vendor_id=2
+Authorization: Bearer <access_token>
   "work_phone": "1234567890",
   "mobile": "9876543210",
   "pan": "ABCDE1234F",

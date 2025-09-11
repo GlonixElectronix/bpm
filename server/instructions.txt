@@ -8,6 +8,30 @@
 
 - The server will be available at http://localhost:8000/
 
+## 1a. Filtering Endpoints by customer_id and vendor_id
+
+Many list endpoints support filtering by `customer_id` and/or `vendor_id` via query parameters. This allows you to retrieve only the records related to a specific customer or vendor.
+
+### Supported Endpoints
+- Quotes: `/api/quotes/?customer_id=<id>`
+- Invoices: `/api/invoices/?customer_id=<id>`
+- Proforma Invoices: `/api/proforma-invoices/?customer_id=<id>`
+- Delivery Challans: `/api/delivery-challans/?customer_id=<id>`
+- Bills: `/api/bills/?vendor_id=<id>`
+
+### Usage Examples
+
+- List all invoices for a customer:
+    `GET /api/invoices/?customer_id=1`
+
+- List all bills for a vendor:
+    `GET /api/bills/?vendor_id=2`
+
+- List all quotes for a customer:
+    `GET /api/quotes/?customer_id=3`
+
+You can combine these filters with other query parameters as needed. Filtering is robust and works with pagination and ordering.
+
 ## 2. User Management (Admin Only)
 - Create a superuser:
 
