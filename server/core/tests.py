@@ -1,6 +1,3 @@
-
-
-
 """Tests for core Django REST API endpoints and models."""
 
 # Standard library imports
@@ -18,160 +15,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
-# ...existing code...
-
-# --- Customer ID filter API tests for Invoice, ProformaInvoice, DeliveryChallan ---
-
-class InvoiceFilterAPITestCase(APITestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username="invoicefilteruser", password="testpass")
-        self.client.force_authenticate(user=self.user)
-        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
-        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
-        self.invoice1 = Invoice.objects.create(customer=self.customer1, invoice_number="INV-001", invoice_date="2025-09-01")
-        self.invoice2 = Invoice.objects.create(customer=self.customer1, invoice_number="INV-002", invoice_date="2025-09-02")
-        self.invoice3 = Invoice.objects.create(customer=self.customer2, invoice_number="INV-003", invoice_date="2025-09-03")
-
-    def test_no_invoices_for_customer(self):
-        new_customer = Customer.objects.create(display_name="No Invoices", email="noinv@example.com")
-        url = reverse("invoice-list") + f"?customer_id={new_customer.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["count"], 0)
-
-    def test_subset_of_invoices_for_customer(self):
-        url = reverse("invoice-list") + f"?customer_id={self.customer1.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        returned_ids = {inv["id"] for inv in response.data["results"]}
-        expected_ids = {self.invoice1.id, self.invoice2.id}
-        self.assertEqual(returned_ids, expected_ids)
-        for inv in response.data["results"]:
-            self.assertEqual(inv["customer"]["id"], self.customer1.id)
-
-class ProformaInvoiceFilterAPITestCase(APITestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username="pifilteruser", password="testpass")
-        self.client.force_authenticate(user=self.user)
-        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
-        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
-        self.pi1 = ProformaInvoice.objects.create(customer=self.customer1, invoice_number="PI-001", invoice_date="2025-09-01", expiry_date="2025-09-10")
-        self.pi2 = ProformaInvoice.objects.create(customer=self.customer1, invoice_number="PI-002", invoice_date="2025-09-02", expiry_date="2025-09-11")
-        self.pi3 = ProformaInvoice.objects.create(customer=self.customer2, invoice_number="PI-003", invoice_date="2025-09-03", expiry_date="2025-09-12")
-
-    def test_no_proforma_invoices_for_customer(self):
-        new_customer = Customer.objects.create(display_name="No PI", email="nopi@example.com")
-        url = reverse("proformainvoice-list") + f"?customer_id={new_customer.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["count"], 0)
-
-    def test_subset_of_proforma_invoices_for_customer(self):
-        url = reverse("proformainvoice-list") + f"?customer_id={self.customer1.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        returned_ids = {pi["id"] for pi in response.data["results"]}
-        expected_ids = {self.pi1.id, self.pi2.id}
-        self.assertEqual(returned_ids, expected_ids)
-        for pi in response.data["results"]:
-            self.assertEqual(pi["customer"]["id"], self.customer1.id)
-
-class DeliveryChallanFilterAPITestCase(APITestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username="dcfilteruser", password="testpass")
-        self.client.force_authenticate(user=self.user)
-        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
-        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
-        self.dc1 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-001", date="2025-09-01")
-        self.dc2 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-002", date="2025-09-02")
-        self.dc3 = DeliveryChallan.objects.create(customer=self.customer2, challan_number="DC-003", date="2025-09-03")
-
-    def test_no_deliverychallans_for_customer(self):
-        new_customer = Customer.objects.create(display_name="No DC", email="nodc@example.com")
-        url = reverse("deliverychallan-list") + f"?customer_id={new_customer.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["count"], 0)
-
-    def test_subset_of_deliverychallans_for_customer(self):
-        url = reverse("deliverychallan-list") + f"?customer_id={self.customer1.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        returned_ids = {dc["id"] for dc in response.data["results"]}
-        expected_ids = {self.dc1.id, self.dc2.id}
-        self.assertEqual(returned_ids, expected_ids)
-        for dc in response.data["results"]:
-            self.assertEqual(dc["customer"]["id"], self.customer1.id)
-class BillVendorFilterAPITestCase(APITestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username="billfilteruser", password="testpass")
-        self.client.force_authenticate(user=self.user)
-        self.vendor1 = Vendor.objects.create(display_name="Vendor 1", email="v1@example.com")
-        self.vendor2 = Vendor.objects.create(display_name="Vendor 2", email="v2@example.com")
-        self.bill1 = Bill.objects.create(vendor=self.vendor1, bill_number="BILL-001", bill_date="2025-09-01", due_date="2025-09-10")
-        self.bill2 = Bill.objects.create(vendor=self.vendor1, bill_number="BILL-002", bill_date="2025-09-02", due_date="2025-09-11")
-        self.bill3 = Bill.objects.create(vendor=self.vendor2, bill_number="BILL-003", bill_date="2025-09-03", due_date="2025-09-12")
-
-    def test_no_bills_for_vendor(self):
-        new_vendor = Vendor.objects.create(display_name="No Bills", email="novendor@example.com")
-        url = reverse("bill-list") + f"?vendor_id={new_vendor.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["count"], 0)
-
-    def test_subset_of_bills_for_vendor(self):
-        url = reverse("bill-list") + f"?vendor_id={self.vendor1.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        returned_ids = {bill["id"] for bill in response.data["results"]}
-        expected_ids = {self.bill1.id, self.bill2.id}
-        self.assertEqual(returned_ids, expected_ids)
-        for bill in response.data["results"]:
-            self.assertEqual(bill["vendor"]["id"], self.vendor1.id)
-
-
-class DeliveryChallanFilterAPITestCase(APITestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username="dcfilteruser", password="testpass")
-        self.client.force_authenticate(user=self.user)
-        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
-        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
-        self.dc1 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-001", date="2025-09-01")
-        self.dc2 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-002", date="2025-09-02")
-        self.dc3 = DeliveryChallan.objects.create(customer=self.customer2, challan_number="DC-003", date="2025-09-03")
-
-    def test_no_deliverychallans_for_customer(self):
-        new_customer = Customer.objects.create(display_name="No DC", email="nodc@example.com")
-        url = reverse("deliverychallan-list") + f"?customer_id={new_customer.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["count"], 0)
-
-    def test_subset_of_deliverychallans_for_customer(self):
-        url = reverse("deliverychallan-list") + f"?customer_id={self.customer1.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        returned_ids = {dc["id"] for dc in response.data["results"]}
-        expected_ids = {self.dc1.id, self.dc2.id}
-        self.assertEqual(returned_ids, expected_ids)
-        for dc in response.data["results"]:
-            self.assertEqual(dc["customer"]["id"], self.customer1.id)
-"""Tests for core Django REST API endpoints and models."""
-
-# Standard library imports
-import os
-import tempfile
-from decimal import Decimal
-
-# Third-party imports
-from django.core.files import File
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse
-from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
-from rest_framework import status
-from rest_framework.test import APITestCase, APIRequestFactory
-from rest_framework.exceptions import ValidationError as DRFValidationError
 
 # Local imports
 from .models import (
@@ -181,6 +24,8 @@ from .models import (
 from .serializers import CustomerDocumentSerializer
 from .test_utils import FileAttachmentTestBase
 
+
+  
 
 class ReportAndFileViewCoverageTestCase(APITestCase):
     """Test Balance Sheet report and file view coverage for API endpoints."""
@@ -204,6 +49,8 @@ class ReportAndFileViewCoverageTestCase(APITestCase):
         resp = self.client.get(url, {"time": "Today", "basis": "Invalid"})
         self.assertEqual(resp.status_code, 200)
         self.assertIn("assets", resp.data)
+
+  
 
 class ModelStrCoverageTestCase(APITestCase):  # pylint: disable=too-many-instance-attributes
     """Test __str__ methods for all major models for coverage and correctness."""
@@ -263,6 +110,8 @@ class ModelStrCoverageTestCase(APITestCase):  # pylint: disable=too-many-instanc
     def test_inventoryadjustment_str(self):
         """Test __str__ method of InventoryAdjustment model."""
         self.assertIn("ADJ1", str(self.ia))
+
+  
 
 class CustomerDocumentFileTests(APITestCase):
     """Test file upload, update, and validation for CustomerDocument API endpoints."""
@@ -327,6 +176,8 @@ class CustomerDocumentFileTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Content-Disposition", resp)
 
+
+  
 
 class QuoteFileAttachmentTestCase(FileAttachmentTestBase):
     """Test attaching files to Quote via API and retrieving them."""
@@ -414,6 +265,8 @@ class QuoteFileAttachmentTestCase(FileAttachmentTestBase):
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 401)
+
+  
 
 class CoverageBoostTestCase(APITestCase):
     def test_txt_file_stream_content(self):
@@ -509,6 +362,8 @@ class CoverageBoostTestCase(APITestCase):
         summary = DailySummary.objects.create(date="2025-09-04")  # pylint: disable=no-member
         self.assertIn("2025-09-04", str(summary))
 
+  
+
 class ProformaInvoiceFileAttachmentTestCase(FileAttachmentTestBase):
     """Test attaching files to ProformaInvoice via API and retrieving them."""
     def setUp(self):
@@ -583,6 +438,8 @@ class ProformaInvoiceFileAttachmentTestCase(FileAttachmentTestBase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 401)
 
+  
+
 class CustomerContactPersonUpdateTests(APITestCase):
     def setUp(self):
         self.customer = Customer.objects.create(
@@ -655,6 +512,8 @@ class CustomerContactPersonUpdateTests(APITestCase):
         self.assertIn(self.cp2.id, ids)
         self.assertNotIn(self.cp1.id, ids)
         self.assertEqual(ContactPerson.objects.filter(customer=self.customer).count(), 1)
+
+  
 
 class InventoryTrackingOnBillInvoiceTestCase(APITestCase):
     def setUp(self):
@@ -730,4 +589,207 @@ class InventoryTrackingOnBillInvoiceTestCase(APITestCase):
         invoice_item.delete()
         self.item.refresh_from_db()
         self.assertEqual(self.item.current_stock, Decimal("100.00"))
+
+# --- Customer ID filter API tests for Invoice, ProformaInvoice, DeliveryChallan ---
+
+  
+
+class InvoiceFilterAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="invoicefilteruser", password="testpass")
+        self.client.force_authenticate(user=self.user)
+        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
+        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
+        self.invoice1 = Invoice.objects.create(customer=self.customer1, invoice_number="INV-001", invoice_date="2025-09-01")
+        self.invoice2 = Invoice.objects.create(customer=self.customer1, invoice_number="INV-002", invoice_date="2025-09-02")
+        self.invoice3 = Invoice.objects.create(customer=self.customer2, invoice_number="INV-003", invoice_date="2025-09-03")
+
+    def test_no_invoices_for_customer(self):
+        new_customer = Customer.objects.create(display_name="No Invoices", email="noinv@example.com")
+        url = reverse("invoice-list") + f"?customer_id={new_customer.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 0)
+
+    def test_subset_of_invoices_for_customer(self):
+        url = reverse("invoice-list") + f"?customer_id={self.customer1.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        returned_ids = {inv["id"] for inv in response.data["results"]}
+        expected_ids = {self.invoice1.id, self.invoice2.id}
+        self.assertEqual(returned_ids, expected_ids)
+        for inv in response.data["results"]:
+            self.assertEqual(inv["customer"]["id"], self.customer1.id)
+
+  
+
+class ProformaInvoiceFilterAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="pifilteruser", password="testpass")
+        self.client.force_authenticate(user=self.user)
+        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
+        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
+        self.pi1 = ProformaInvoice.objects.create(customer=self.customer1, invoice_number="PI-001", invoice_date="2025-09-01", expiry_date="2025-09-10")
+        self.pi2 = ProformaInvoice.objects.create(customer=self.customer1, invoice_number="PI-002", invoice_date="2025-09-02", expiry_date="2025-09-11")
+        self.pi3 = ProformaInvoice.objects.create(customer=self.customer2, invoice_number="PI-003", invoice_date="2025-09-03", expiry_date="2025-09-12")
+
+    def test_no_proforma_invoices_for_customer(self):
+        new_customer = Customer.objects.create(display_name="No PI", email="nopi@example.com")
+        url = reverse("proformainvoice-list") + f"?customer_id={new_customer.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 0)
+
+    def test_subset_of_proforma_invoices_for_customer(self):
+        url = reverse("proformainvoice-list") + f"?customer_id={self.customer1.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        returned_ids = {pi["id"] for pi in response.data["results"]}
+        expected_ids = {self.pi1.id, self.pi2.id}
+        self.assertEqual(returned_ids, expected_ids)
+        for pi in response.data["results"]:
+            self.assertEqual(pi["customer"]["id"], self.customer1.id)
+
+  
+
+class DeliveryChallanFilterAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="dcfilteruser", password="testpass")
+        self.client.force_authenticate(user=self.user)
+        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
+        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
+        self.dc1 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-001", date="2025-09-01")
+        self.dc2 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-002", date="2025-09-02")
+        self.dc3 = DeliveryChallan.objects.create(customer=self.customer2, challan_number="DC-003", date="2025-09-03")
+
+    def test_no_deliverychallans_for_customer(self):
+        new_customer = Customer.objects.create(display_name="No DC", email="nodc@example.com")
+        url = reverse("deliverychallan-list") + f"?customer_id={new_customer.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 0)
+
+    def test_subset_of_deliverychallans_for_customer(self):
+        url = reverse("deliverychallan-list") + f"?customer_id={self.customer1.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        returned_ids = {dc["id"] for dc in response.data["results"]}
+        expected_ids = {self.dc1.id, self.dc2.id}
+        self.assertEqual(returned_ids, expected_ids)
+        for dc in response.data["results"]:
+            self.assertEqual(dc["customer"]["id"], self.customer1.id)
+  
+
+class BillVendorFilterAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="billfilteruser", password="testpass")
+        self.client.force_authenticate(user=self.user)
+        self.vendor1 = Vendor.objects.create(display_name="Vendor 1", email="v1@example.com")
+        self.vendor2 = Vendor.objects.create(display_name="Vendor 2", email="v2@example.com")
+        self.bill1 = Bill.objects.create(vendor=self.vendor1, bill_number="BILL-001", bill_date="2025-09-01", due_date="2025-09-10")
+        self.bill2 = Bill.objects.create(vendor=self.vendor1, bill_number="BILL-002", bill_date="2025-09-02", due_date="2025-09-11")
+        self.bill3 = Bill.objects.create(vendor=self.vendor2, bill_number="BILL-003", bill_date="2025-09-03", due_date="2025-09-12")
+
+    def test_no_bills_for_vendor(self):
+        new_vendor = Vendor.objects.create(display_name="No Bills", email="novendor@example.com")
+        url = reverse("bill-list") + f"?vendor_id={new_vendor.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 0)
+
+    def test_subset_of_bills_for_vendor(self):
+        url = reverse("bill-list") + f"?vendor_id={self.vendor1.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        returned_ids = {bill["id"] for bill in response.data["results"]}
+        expected_ids = {self.bill1.id, self.bill2.id}
+        self.assertEqual(returned_ids, expected_ids)
+        for bill in response.data["results"]:
+            self.assertEqual(bill["vendor"]["id"], self.vendor1.id)
+
+
+  
+
+class DeliveryChallanFilterAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="dcfilteruser", password="testpass")
+        self.client.force_authenticate(user=self.user)
+        self.customer1 = Customer.objects.create(display_name="Customer 1", email="c1@example.com")
+        self.customer2 = Customer.objects.create(display_name="Customer 2", email="c2@example.com")
+        self.dc1 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-001", date="2025-09-01")
+        self.dc2 = DeliveryChallan.objects.create(customer=self.customer1, challan_number="DC-002", date="2025-09-02")
+        self.dc3 = DeliveryChallan.objects.create(customer=self.customer2, challan_number="DC-003", date="2025-09-03")
+
+    def test_no_deliverychallans_for_customer(self):
+        new_customer = Customer.objects.create(display_name="No DC", email="nodc@example.com")
+        url = reverse("deliverychallan-list") + f"?customer_id={new_customer.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 0)
+
+    def test_subset_of_deliverychallans_for_customer(self):
+        url = reverse("deliverychallan-list") + f"?customer_id={self.customer1.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        returned_ids = {dc["id"] for dc in response.data["results"]}
+        expected_ids = {self.dc1.id, self.dc2.id}
+        self.assertEqual(returned_ids, expected_ids)
+        for dc in response.data["results"]:
+            self.assertEqual(dc["customer"]["id"], self.customer1.id)
+
+  
+
+class InvoiceFieldAPITestCase(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="invoicefielduser", password="testpass")
+        self.client.force_authenticate(user=self.user)
+        from core.models import Customer, Invoice
+        from datetime import date, timedelta
+        self.customer = Customer.objects.create(display_name="FieldTest Customer", email="ftest@example.com")
+        self.invoice = Invoice.objects.create(
+            customer=self.customer,
+            invoice_number="INV-FIELD-001",
+            order_number="ORD-FIELD-001",
+            invoice_date=date.today(),
+            due_date=date.today() + timedelta(days=10),
+            status="PAID",
+            subtotal_amount=Decimal("1234.56"),
+            gst_amount=Decimal("222.22"),
+            total_amount=Decimal("1456.78"),
+            customer_notes="Field test notes",
+            terms_and_conditions="Field test terms",
+        )
+
+    def test_invoice_fields_in_api_response(self):
+        url = reverse("invoice-detail", args=[self.invoice.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.data
+        self.assertEqual(data["id"], self.invoice.id)
+        self.assertEqual(data["status"], "PAID")
+        self.assertEqual(data["due_date"], str(self.invoice.due_date))
+        self.assertEqual(Decimal(data["subtotal_amount"]), Decimal("1234.56"))
+        self.assertEqual(Decimal(data["gst_amount"]), Decimal("222.22"))
+        self.assertEqual(Decimal(data["total_amount"]), Decimal("1456.78"))
+        self.assertIn("item_details", data)
+        self.assertIn("customer_notes", data)
+        self.assertIn("terms_and_conditions", data)
+
+    def test_invoice_fields_are_writable(self):
+        url = reverse("invoice-detail", args=[self.invoice.id])
+        patch_data = {
+            "subtotal_amount": "9999.99",
+            "gst_amount": "888.88",
+            "status": "CANCELLED",
+            "due_date": "2099-12-31"
+        }
+        response = self.client.patch(url, patch_data, format="json")
+        self.assertEqual(response.status_code, 200)
+        # Fetch again to confirm values changed
+        response = self.client.get(url)
+        data = response.data
+        self.assertEqual(Decimal(data["subtotal_amount"]), Decimal("9999.99"))
+        self.assertEqual(Decimal(data["gst_amount"]), Decimal("888.88"))
+        self.assertEqual(data["status"], "CANCELLED")
+        self.assertEqual(data["due_date"], "2099-12-31")
 

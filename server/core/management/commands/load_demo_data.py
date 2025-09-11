@@ -272,6 +272,71 @@ class Command(BaseCommand):
             }
         )
 
+        # Demo Invoices
+        from core.models import Invoice, InvoiceItem
+        import decimal
+        invoice1, _ = Invoice.objects.get_or_create(
+            invoice_number="INV-2025-001",
+            defaults={
+                "customer": customer1,
+                "order_number": "ORD-123",
+                "invoice_date": today,
+                "due_date": today.replace(day=min(today.day+15,28)),
+                "status": "UNPAID",
+                "customer_notes": "Demo invoice for Acme Corp.",
+                "terms_and_conditions": "Payment due in 30 days.",
+                "subtotal_amount": decimal.Decimal("11000.00"),
+                "gst_amount": decimal.Decimal("1980.00"),
+                "total_amount": decimal.Decimal("12980.00"),
+            }
+        )
+        invoice2, _ = Invoice.objects.get_or_create(
+            invoice_number="INV-2025-002",
+            defaults={
+                "customer": customer2,
+                "order_number": "ORD-124",
+                "invoice_date": today,
+                "due_date": today.replace(day=min(today.day+20,28)),
+                "status": "DRAFT",
+                "customer_notes": "Demo invoice for Globex Inc.",
+                "terms_and_conditions": "Payment due in 15 days.",
+                "subtotal_amount": decimal.Decimal("5000.00"),
+                "gst_amount": decimal.Decimal("900.00"),
+                "total_amount": decimal.Decimal("5900.00"),
+            }
+        )
+        # Demo Invoice Items
+        InvoiceItem.objects.get_or_create(
+            invoice=invoice1,
+            item=item1,
+            invoice_item_number=1,
+            defaults={
+                "quantity": 2,
+                "rate": decimal.Decimal("5000.00"),
+                "amount": decimal.Decimal("10000.00"),
+            }
+        )
+        InvoiceItem.objects.get_or_create(
+            invoice=invoice1,
+            item=item2,
+            invoice_item_number=2,
+            defaults={
+                "quantity": 1,
+                "rate": decimal.Decimal("1000.00"),
+                "amount": decimal.Decimal("1000.00"),
+            }
+        )
+        InvoiceItem.objects.get_or_create(
+            invoice=invoice2,
+            item=item3,
+            invoice_item_number=1,
+            defaults={
+                "quantity": 5,
+                "rate": decimal.Decimal("1000.00"),
+                "amount": decimal.Decimal("5000.00"),
+            }
+        )
+
         # Example for InvoiceItem, ProformaInvoiceItem, DeliveryChallanItem (future-proof, add real demo if needed)
         # from core.models import InvoiceItem, ProformaInvoiceItem, DeliveryChallanItem, Invoice, ProformaInvoice, DeliveryChallan
         # invoice = Invoice.objects.first()

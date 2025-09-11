@@ -806,6 +806,18 @@ class InvoiceItem(DocumentItemBase):
 
 
 class Invoice(models.Model):
+    subtotal_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    gst_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    STATUS_CHOICES = [
+        ("DRAFT", "Draft"),
+        ("UNPAID", "Unpaid"),
+        ("PAID", "Paid"),
+        ("PARTIAL", "Partial"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    due_date = models.DateField(null=True, blank=True, db_index=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="DRAFT", db_index=True)
     """Model representing a sales Invoice."""
     invoice_files = models.ManyToManyField(
         "CustomerDocument",

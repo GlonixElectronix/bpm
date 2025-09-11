@@ -410,11 +410,21 @@ Authorization: Bearer <access_token>
 # Response example:
 # {
 #   "id": 1,
-#   ...
+#   "customer": { ... },
+#   "invoice_number": "INV-2025-001",
+#   "order_number": "ORD-123",
+#   "invoice_date": "2025-08-30",
+#   "due_date": "2025-09-15",
+#   "status": "UNPAID",
 #   "item_details": [
 #     {"id": 1, "item": { ... }, "quantity": 2, "rate": "5000.00", "amount": "10000.00", "invoice_item_number": 1},
 #     {"id": 2, "item": { ... }, "quantity": 1, "rate": "1000.00", "amount": "1000.00", "invoice_item_number": 2}
 #   ],
+#   "customer_notes": "Thank you for your business.",
+#   "terms_and_conditions": "Payment due in 30 days.",
+#   "subtotal_amount": "11000.00",
+#   "gst_amount": "1980.00",
+#   "total_amount": "12980.00",
 #   "attached_files": [
 #     {"id": 4, "file": "/media/customer_documents/file4.pdf", "uploaded_at": "..."},
 #     {"id": 5, "file": "/media/customer_documents/file5.pdf", "uploaded_at": "..."}
@@ -424,7 +434,7 @@ Authorization: Bearer <access_token>
 #     {"id": 2, "file": "/media/customer_documents/file2.pdf", "uploaded_at": "..."},
 #     {"id": 3, "file": "/media/customer_documents/file3.pdf", "uploaded_at": "..."}
 #   ],
-#   ...
+#   "created_at": "2025-08-30T10:00:00Z"
 # }
 
 ####
