@@ -12,8 +12,11 @@ django-cors-headers = "*"
 pylint = "*"
 djangorestframework-simplejwt = {extras = ["blacklist"], version = "*"}
 django-filter = "*"
+autopep8 = "*"
 
 [dev-packages]
-
+black = "*"
+flake8 = "*"
+coverage = "*"
 [requires]
 python_version = "3.9"

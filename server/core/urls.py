@@ -22,7 +22,11 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r"inventory-management", InventoryManagementViewSet, basename="inventorymanagement")
+router.register(
+    r"inventory-management",
+    InventoryManagementViewSet,
+    basename="inventorymanagement",
+)
 
 
 router = DefaultRouter()
@@ -52,6 +56,7 @@ router.register(r"files", CustomerDocumentViewSet, basename="file")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("banking/", include("server.core.banking.urls")),
     path(
         "reports/profit-and-loss/",
         ProfitAndLossReportView.as_view(),

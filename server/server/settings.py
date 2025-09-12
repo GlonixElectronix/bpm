@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-
+from datetime import timedelta
+import dj_database_url
 import os
 from pathlib import Path
 
@@ -25,7 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
-    "django-insecure-rg07c)&)br4t_34gpt4mp#dmt2_x@vrsi)69_^a&zj8!884&cp"  # fallback for dev only
+    # fallback for dev only
+    "django-insecure-rg07c)&)br4t_34gpt4mp#dmt2_x@vrsi)69_^a&zj8!884&cp",
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -34,12 +36,13 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
 # Use comma-separated env var for allowed hosts, fallback to localhost/dev IPs
 ALLOWED_HOSTS = os.environ.get(
-    "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1,192.168.0.22,172.20.10.6"
+    "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.0.22,172.20.10.6"
 ).split(",")
 
 
 # Application definition
+WSGI_APPLICATION = "server.wsgi.application"
+ASGI_APPLICATION = "server.asgi.application"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -49,7 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
-    "core.apps.CoreConfig",
+    "server.core.apps.CoreConfig",
+    "server.core.banking.apps.BankingConfig",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "background_task",
@@ -73,7 +77,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-ROOT_URLCONF = "server.urls"
+ROOT_URLCONF = "server.server.urls"
 
 TEMPLATES = [
     {
@@ -98,7 +102,7 @@ WSGI_APPLICATION = "server.wsgi.application"
 
 
 # Use DATABASE_URL if set, else fallback to sqlite3
-import dj_database_url
+
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
@@ -112,7 +116,8 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
         ),
     },
     {
@@ -149,7 +154,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.environ.get("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))
+STATIC_ROOT = os.environ.get(
+    "DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -168,7 +174,6 @@ SECURE_HSTS_PRELOAD = not DEBUG
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-from datetime import timedelta
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -191,5 +196,8 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.token_blacklist.serializers.BlacklistSerializer",
+    "TOKEN_BLACKLIST_SERIALIZER": (
+        "rest_framework_simplejwt.token_blacklist.serializers."
+        "BlacklistSerializer"
+    ),
 }
