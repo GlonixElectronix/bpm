@@ -922,6 +922,18 @@ class DeliveryChallanSerializer(serializers.ModelSerializer):
         write_only=True,
     )
     item_details = DeliveryChallanItemSerializer(many=True)
+    status = serializers.ChoiceField(
+        choices=[
+            ("draft", "Draft"),
+            ("issued", "Issued"),
+            ("dispatched", "Dispatched"),
+            ("delivered", "Delivered"),
+            ("cancelled", "Cancelled"),
+            ("returned", "Returned"),
+        ],
+        required=False,
+        default="draft",
+    )
 
     """Serializer for DeliveryChallan model."""
 
@@ -937,6 +949,7 @@ class DeliveryChallanSerializer(serializers.ModelSerializer):
             "reference_number",
             "date",
             "challan_type",
+            "status",
             "item_details",
             "delivery_challan_file_ids",
             "delivery_challan_files",

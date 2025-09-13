@@ -1029,13 +1029,22 @@ class DeliveryChallanFilterAPITestCase(APITestCase):
             display_name="Customer 2", email="c2@example.com"
         )
         self.dc1 = DeliveryChallan.objects.create(
-            customer=self.customer1, challan_number="DC-001", date="2025-09-01"
+            customer=self.customer1,
+            challan_number="DC-001",
+            date="2025-09-01",
+            status="draft",
         )
         self.dc2 = DeliveryChallan.objects.create(
-            customer=self.customer1, challan_number="DC-002", date="2025-09-02"
+            customer=self.customer1,
+            challan_number="DC-002",
+            date="2025-09-02",
+            status="issued",
         )
         self.dc3 = DeliveryChallan.objects.create(
-            customer=self.customer2, challan_number="DC-003", date="2025-09-03"
+            customer=self.customer2,
+            challan_number="DC-003",
+            date="2025-09-03",
+            status="delivered",
         )
 
     def test_no_deliverychallans_for_customer(self):
@@ -1058,3 +1067,5 @@ class DeliveryChallanFilterAPITestCase(APITestCase):
         self.assertEqual(returned_ids, expected_ids)
         for dc in response.data["results"]:
             self.assertEqual(dc["customer"]["id"], self.customer1.id)
+            self.assertIn("status", dc)
+            self.assertIsInstance(dc["status"], str)

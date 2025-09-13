@@ -851,6 +851,19 @@ class DeliveryChallan(models.Model):
         choices=CHALLAN_TYPE_CHOICES,
         default="others",
     )
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("issued", "Issued"),
+        ("dispatched", "Dispatched"),
+        ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
+        ("returned", "Returned"),
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+    )
     total_amount = models.DecimalField(
         max_digits=12, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)

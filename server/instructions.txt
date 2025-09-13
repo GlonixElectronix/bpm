@@ -908,6 +908,7 @@ Response:
 - reference_number: string (optional)
 - date: date (YYYY-MM-DD)
 - challan_type: "liquid_gas", "job_work", "approval", "others" (enum)
+- status: "draft", "issued", "dispatched", "delivered", "cancelled", "returned" (enum, default: draft, read/write)
 - item_details: array of DeliveryChallanItem objects (see below)
 - delivery_challan_file_ids: array of CustomerDocument IDs (for file attachment; read/write)
 - delivery_challan_files: array of CustomerDocument objects (read-only, see CustomerDocument Fields)
@@ -934,6 +935,7 @@ Authorization: Bearer <access_token>
     "reference_number": "REF-789",
     "date": "2025-08-30",
     "challan_type": "liquid_gas",
+    "status": "draft",
     "delivery_challan_file_ids": [10, 11],
     "total_amount": "20000.00"
 }
@@ -950,6 +952,7 @@ Response:
     "reference_number": "REF-789",
     "date": "2025-08-30",
     "challan_type": "liquid_gas",
+    "status": "draft",
     "item_details": [
         {"id": 1, "item": { ... }, "quantity": 5, "rate": "4000.00", "amount": "20000.00", "delivery_challan_item_number": 1}
     ],

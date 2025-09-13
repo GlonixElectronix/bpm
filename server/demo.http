@@ -851,6 +851,7 @@ Content-Type: application/json
   "reference_number": "REF-789",
   "date": "2025-08-30",
   "challan_type": "liquid_gas",
+  "status": "draft",
   "item_details": [
     {"item_id": 1, "quantity": 2, "rate": "100.00", "amount": "200.00"},
     {"item_id": 2, "quantity": 1, "rate": "150.00", "amount": "150.00"}
@@ -876,6 +877,7 @@ Content-Type: application/json
 
 {
   "challan_type": "job_work",
+  "status": "dispatched",
   "delivery_challan_file_ids": [10],
   "total_amount": "21000.00"
 }

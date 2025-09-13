@@ -49,6 +49,7 @@ class DeliveryChallanFileAttachmentTestCase(FileAttachmentTestBase):
             "challan_type": "others",
             "item_details": [],
             "delivery_challan_file_ids": self.get_file_ids(3),
+            "status": "draft",
         }
         self.challan_data_with_items = {
             "customer_id": self.customer.id,
@@ -70,6 +71,7 @@ class DeliveryChallanFileAttachmentTestCase(FileAttachmentTestBase):
                 },
             ],
             "delivery_challan_file_ids": self.get_file_ids(1),
+            "status": "issued",
         }
 
     def test_create_challan_with_files(self):
@@ -82,6 +84,8 @@ class DeliveryChallanFileAttachmentTestCase(FileAttachmentTestBase):
         self.assertEqual(
             file_ids, {self.files[0].id, self.files[1].id, self.files[2].id}
         )
+        self.assertIn("status", response.data)
+        self.assertEqual(response.data["status"], "draft")
 
     def test_update_challan_with_item_details(self):
         """Test updating a DeliveryChallan with new item details."""
@@ -100,10 +104,13 @@ class DeliveryChallanFileAttachmentTestCase(FileAttachmentTestBase):
             }
         ]
         update_data["challan_number"] = "DC-2025-TEST-ITEMS-UPDATED"
+        update_data["status"] = "dispatched"
         resp = self.client.put(update_url, update_data, format="json")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(resp.data["item_details"]), 1)
         self.assertEqual(resp.data["item_details"][0]["quantity"], 5)
+        self.assertIn("status", resp.data)
+        self.assertEqual(resp.data["status"], "dispatched")
 
     def test_retrieve_challan_with_files(self):
         """Test retrieving a DeliveryChallan with attached files."""
@@ -117,6 +124,8 @@ class DeliveryChallanFileAttachmentTestCase(FileAttachmentTestBase):
         self.assertEqual(
             file_ids, {self.files[0].id, self.files[1].id, self.files[2].id}
         )
+        self.assertIn("status", get_resp.data)
+        self.assertIsInstance(get_resp.data["status"], str)
 
     def test_create_challan_invalid_customer(self):
         """Test creating a DeliveryChallan with an invalid customer ID."""
