@@ -57,3 +57,7 @@ coverage: install clean-pyc clean-pytestcache
 	COVERAGE_FILE=server/.coverage pipenv run coverage run --rcfile=server/.coveragerc -m server.manage test
 	COVERAGE_FILE=server/.coverage pipenv run coverage report --rcfile=server/.coveragerc
 	COVERAGE_FILE=server/.coverage pipenv run coverage html --rcfile=server/.coveragerc
+
+# --- Run Development Server ---
+runserver: install
+	PYTHONPATH=$(CURDIR) pipenv run python3 -m server.manage runserver
